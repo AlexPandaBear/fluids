@@ -2,9 +2,17 @@
 
 This project is a solver for the Navier-Stokes model in the case of incompressible flows.
 
-[equation](mass_eq.gif)
-[equation](momentum_eq.gif)
-[equation](temp_eq.gif)
+<p align="center">
+  ![equation](mass_eq.gif)
+</p>
+
+<p align="center">
+  ![equation](momentum_eq.gif)
+</p>
+
+<p align="center">
+  ![equation](temp_eq.gif)
+</p>
 
 ## Requirements
 To compile the library :
