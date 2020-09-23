@@ -3,15 +3,15 @@
 This project is a solver for the Navier-Stokes model in the case of incompressible flows.
 
 <p align="center">
-  ![equation](mass_eq.gif)
+	<img src=mass_eq.gif />
 </p>
 
 <p align="center">
-  ![equation](momentum_eq.gif)
+	<img src=momentum_eq.gif />
 </p>
 
 <p align="center">
-  ![equation](temp_eq.gif)
+	<img src=temp_eq.gif />
 </p>
 
 ## Requirements
