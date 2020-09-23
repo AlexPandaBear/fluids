@@ -61,6 +61,70 @@ void SimManager::defineBoundaryConditions(std::string type, double value)
 	}
 }
 
+void SimManager::defineErrorTolerance(double press_err_max)
+{
+	m_press_err_max = press_err_max;
+}
+
+
+void SimManager::launchSimulation()
+{
+	IncompressibleKernel flow_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_rho, m_mu, m_press_err_max);
+	flow_kernel.simulate();
+	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cv, m_temp_BC, m_flux_BC, m_BC_value);
+	th_kernel.simulate();
+}
+
+double SimManager::getTemperatureAt(size_t t, size_t i, size_t j) const
+{
+	return m_data.getTemperatureAt(t, i, j);
+}
+
+double SimManager::getPressureAt(size_t t, size_t i, size_t j) const
+{
+	return m_data.getPressureAt(t, i, j);
+}
+
+double SimManager::getXVelocityAt(size_t t, size_t i, size_t j) const
+{
+	return m_data.getXVelocityAt(t, i, j);
+}
+
+double SimManager::getYVelocityAt(size_t t, size_t i, size_t j) const
+{
+	return m_data.getYVelocityAt(t, i, j);
+}
+
+void SimManager::setTemperatureAt(size_t t, size_t i, size_t j, double T)
+{
+	m_data.setTemperatureAt(t, i, j, T);
+}
+
+void SimManager::setPressureAt(size_t t, size_t i, size_t j, double P)
+{
+	m_data.setPressureAt(t, i, j, P);
+}
+
+void SimManager::setXVelocityAt(size_t t, size_t i, size_t j, double U)
+{
+	m_data.setXVelocityAt(t, i, j, U);
+}
+
+void SimManager::setYVelocityAt(size_t t, size_t i, size_t j, double V)
+{
+	m_data.setYVelocityAt(t, i, j, V);
+}
+
+void SimManager::saveData(std::string file_name) const
+{
+	m_data.saveData(file_name);
+}
+
+void SimManager::loadData(std::string file_name)
+{
+	m_data.loadData(file_name);
+}
+
 /*
 double SimManager::get_tMax() const
 {
@@ -157,51 +221,3 @@ double SimManager::get_press_err_max() const
 	return m_press_err_max;
 }
 */
-
-void SimManager::launchSimulation()
-{
-	IncompressibleKernel flow_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_rho, m_mu, m_press_err_max);
-	flow_kernel.simulate();
-	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cv, m_temp_BC, m_flux_BC, m_BC_value);
-	th_kernel.simulate();
-}
-
-double SimManager::getTemperatureAt(size_t t, size_t i, size_t j) const
-{
-	return m_data.getTemperatureAt(t, i, j);
-}
-
-double SimManager::getPressureAt(size_t t, size_t i, size_t j) const
-{
-	return m_data.getPressureAt(t, i, j);
-}
-
-double SimManager::getXVelocityAt(size_t t, size_t i, size_t j) const
-{
-	return m_data.getXVelocityAt(t, i, j);
-}
-
-double SimManager::getYVelocityAt(size_t t, size_t i, size_t j) const
-{
-	return m_data.getYVelocityAt(t, i, j);
-}
-
-void SimManager::setTemperatureAt(size_t t, size_t i, size_t j, double T)
-{
-	m_data.setTemperatureAt(t, i, j, T);
-}
-
-void SimManager::setPressureAt(size_t t, size_t i, size_t j, double P)
-{
-	m_data.setPressureAt(t, i, j, P);
-}
-
-void SimManager::setXVelocityAt(size_t t, size_t i, size_t j, double U)
-{
-	m_data.setXVelocityAt(t, i, j, U);
-}
-
-void SimManager::setYVelocityAt(size_t t, size_t i, size_t j, double V)
-{
-	m_data.setYVelocityAt(t, i, j, V);
-}

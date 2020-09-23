@@ -38,7 +38,22 @@ public:
 	void defineFluidProperties(double lambda, double rho, double cv, double mu);
 	void defineInitialState(std::vector<std::vector<double>> U0, std::vector<std::vector<double>> V0, std::vector<std::vector<double>> P0, std::vector<std::vector<double>> T0);
 	void defineBoundaryConditions(std::string type, double value);
+	void defineErrorTolerance(double press_err_max);
 
+	void launchSimulation();
+
+	double getTemperatureAt(size_t t, size_t i, size_t j) const;
+	double getPressureAt(size_t t, size_t i, size_t j) const;
+	double getXVelocityAt(size_t t, size_t i, size_t j) const;
+	double getYVelocityAt(size_t t, size_t i, size_t j) const;
+
+	void setTemperatureAt(size_t t, size_t i, size_t j, double T);
+	void setPressureAt(size_t t, size_t i, size_t j, double P);
+	void setXVelocityAt(size_t t, size_t i, size_t j, double U);
+	void setYVelocityAt(size_t t, size_t i, size_t j, double V);
+
+	void saveData(std::string file_name) const;
+	void loadData(std::string file_name);
 /*
 	double get_tMax() const;
 	size_t get_nb_steps() const;
@@ -60,16 +75,4 @@ public:
 	double get_BC_value() const;
 	double get_press_err_max() const;
 */
-
-	void launchSimulation();
-
-	double getTemperatureAt(size_t t, size_t i, size_t j) const;
-	double getPressureAt(size_t t, size_t i, size_t j) const;
-	double getXVelocityAt(size_t t, size_t i, size_t j) const;
-	double getYVelocityAt(size_t t, size_t i, size_t j) const;
-
-	void setTemperatureAt(size_t t, size_t i, size_t j, double T);
-	void setPressureAt(size_t t, size_t i, size_t j, double P);
-	void setXVelocityAt(size_t t, size_t i, size_t j, double U);
-	void setYVelocityAt(size_t t, size_t i, size_t j, double V);
 };

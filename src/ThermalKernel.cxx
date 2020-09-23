@@ -59,12 +59,20 @@ double ThermalKernel::creation(size_t i, size_t j) const
 	//return m_nu*((m_U[i+1][j] + m_U[i-1][j] - 2*m_U[i][j])/(m_dy*m_dy) + (m_V[i+1][j] + m_V[i-1][j] - 2*m_V[i][j])/(m_dx*m_dx));
 	return 0.;
 }
+
+void ThermalKernel::printSimulationProgression(size_t t) const
+{
+	std::cout << "\rComputing step " << t+1 << " out of " << m_nb_steps << " -- " << 100.*(t+1)/m_nb_steps << "% completed     " << std::flush;
+}
 	
 void ThermalKernel::simulate()
 {
+	std::cout << "Solving heat equation..." << std::endl;
+
 	for (size_t t = 0; t < m_nb_steps; t++)
 	{
 		getAllFieldsAt(t);
+		printSimulationProgression(t);
 
 		for (size_t i = 1; i < m_nx-1; i++)
 		{
@@ -109,4 +117,6 @@ void ThermalKernel::simulate()
 			throw std::logic_error("Bad definition of boundary conditions");
 		}
 	}
+
+	std::cout << std::endl;
 }

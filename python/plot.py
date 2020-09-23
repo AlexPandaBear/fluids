@@ -6,8 +6,9 @@ Created on Fri Sep 18 19:05:56 2020
 @author: alexandre
 """
 
-#%% IMPORTS
 
+
+#%% IMPORTS
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -19,62 +20,17 @@ import _vf as vf
 
 #%% PARAMETERS
 
-#Meshing
-Lx = 10
-Ly = 10
-nx = 100
-ny = 100
+exec(open("parameters.py").read())
 
-#Time
-tEnd = 10
-nb_steps = 1000
-
-#Fluid
-lamb = 0
-rho = 1000
-cv = 4000
-mu = 0
-
-#Initial state
-U0 = np.zeros((nx,ny))
-V0 = np.zeros((nx,ny))
-P0 = np.zeros((nx,ny))
-T0 = np.zeros((nx,ny))
-
-for i in range(nx):
-    for j in range(ny):
-        r2 = (i-nx/2.)**2 + (j-ny/2.)**2
-        T0[i,j] = 150*(np.exp(-0.01*r2) + np.sin(0.1*i)**2)
-
-T0_max = 500
-
-U_max = 1
-V_max = 1
-
-for i in range(nx):
-    for j in range(ny):
-        U0[i,j] = U_max * np.cos(np.pi*((i/nx)-0.5)) * np.sin(np.pi*((2*j/ny)-1))
-        V0[i,j] = -V_max * np.cos(np.pi*((j/ny)-0.5)) * np.sin(np.pi*((2*i/nx)-1))
-
-P0_max = 10**5
-
-for i in range(nx):
-    for j in range(ny):
-        P0[i,j] = P0_max
-
-#Plot
+file_name = "../data/test"
 max_frames = 100
 
 
-#%% SIMULATION
+
+#%% PLOT
 
 S = vf.SM()
-S.defineTimeParameters(tEnd, nb_steps)
-S.defineGridParameters(Lx, Ly, nx, ny)
-S.defineFluidProperties(lamb, rho, cv, mu)
-S.defineInitialState(U0, V0, P0, T0)
-S.defineBoundaryConditions("flux", 0)
-S.launchSimulation()
+S.loadData(file_name)
 
 T = np.zeros((nx,ny,nb_steps+1))
 P = np.zeros((nx,ny,nb_steps+1))
@@ -89,9 +45,6 @@ for t in range(nb_steps+1):
             U[i,j,t] = S.getXVelocityAt(t, i, j)
             V[i,j,t] = S.getYVelocityAt(t, i, j)
 
-
-
-#%% PLOT
 
 x = np.linspace(0, Lx, nx)
 y = np.linspace(0, Ly, ny)

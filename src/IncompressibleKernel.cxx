@@ -224,4 +224,6 @@ void IncompressibleKernel::simulate()
 		getVelocityFieldsAt(t+1);
 		updatePressureField(t, m_err_max);
 	}
+
+	std::cout << std::endl;
 }

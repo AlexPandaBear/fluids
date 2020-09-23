@@ -38,6 +38,8 @@ PYBIND11_MODULE(_vf, m)
         .def("defineBoundaryConditions", &SimManager::defineBoundaryConditions,
         	py::arg("type"),
         	py::arg("value"))
+        .def("defineErrorTolerance", &SimManager::defineErrorTolerance,
+        	py::arg("max_pressure_error"))
         .def("launchSimulation", &SimManager::launchSimulation)
         .def("getTemperatureAt", &SimManager::getTemperatureAt,
         	py::arg("t"),
@@ -54,5 +56,9 @@ PYBIND11_MODULE(_vf, m)
         .def("getYVelocityAt", &SimManager::getYVelocityAt,
         	py::arg("t"),
         	py::arg("i"),
-        	py::arg("j"));
+        	py::arg("j"))
+        .def("saveData", &SimManager::saveData,
+        	py::arg("file_name"))
+        .def("loadData", &SimManager::loadData,
+        	py::arg("file_name"));
 }

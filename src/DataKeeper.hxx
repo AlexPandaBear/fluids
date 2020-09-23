@@ -1,6 +1,8 @@
 #pragma once
 
 #include <memory>
+#include <string>
+#include <fstream>
 
 class DataKeeper
 {
@@ -31,5 +33,8 @@ public:
 	void setTemperatureAt(size_t t, size_t i, size_t j, double T);
 	void setPressureAt(size_t t, size_t i, size_t j, double P);
 	void setXVelocityAt(size_t t, size_t i, size_t j, double U);
-	void setYVelocityAt(size_t t, size_t i, size_t j, double V);	
+	void setYVelocityAt(size_t t, size_t i, size_t j, double V);
+
+	void saveData(std::string file_name) const;
+	void loadData(std::string file_name);
 };
