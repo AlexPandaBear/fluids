@@ -1,6 +1,6 @@
 # HEAT EQUATION SOLVER FOR UNSTEADY INCOMPRESSIBLE FLOWS
 
-This project is a solver for the Navier-Stokes model in the case of incompressible flows.
+This project is a solver for the Navier-Stokes model in the case of 2D incompressible flows. Since the thermal and dynamic aspects of the flow are separable (see incompressible Navier-Stokes equations below), the code first computes the motion, and then solves the heat equation using the known motion. During the computation of the motion, the temporal integration of the velocity is performed explicitly, but since one can only derive a Poisson equation for the pressure, the pressure is computed with an iterative algorithm at each time step.
 
 <p align="center">
 	<img src=mass_eq.gif />
@@ -13,6 +13,8 @@ This project is a solver for the Navier-Stokes model in the case of incompressib
 <p align="center">
 	<img src=temp_eq.gif />
 </p>
+
+This project is coded as a C++ library interfaced with Python scripts, to benefit from the performance of the C++, the flexibility of Python and the graphical rendering of the Matplotlib library. The interface is done with the PyBind11 library.
 
 ## Requirements
 To compile the library :
