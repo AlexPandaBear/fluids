@@ -2,7 +2,9 @@
 
 This project is a solver for the Navier-Stokes model in the case of incompressible flows.
 
-$$ \text{div}(V) = 0 $$
+![alt text](mass_eq.gif)
+![alt text](momentum_eq.gif)
+![alt text](temp_eq.gif)
 
 ## Requirements
 To compile the library :
