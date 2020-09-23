@@ -2,8 +2,8 @@
 <%
 setup_pybind11(cfg)
 cfg['compiler_args'] = ['-std=c++11', '-I/usr/local/lib/python3.7/dist-packages/pybind11-2.4.3-py3.7.egg/']
-cfg['dependencies'] = ['SimManager.hxx']
-cfg['sources'] = ['SimManager.cxx']
+cfg['dependencies'] = ['SimManager.hxx', 'IncompressibleKernel.hxx', 'ThermalKernel.hxx']
+cfg['sources'] = ['SimManager.cxx', 'IncompressibleKernel.cxx', 'ThermalKernel.cxx']
 %>
 */
 
@@ -39,5 +39,20 @@ PYBIND11_MODULE(_vf, m)
         	py::arg("type"),
         	py::arg("value"))
         .def("launchSimulation", &SimManager::launchSimulation)
-        .def("getResults", &SimManager::getResults);
+        .def("getTemperatureAt", &SimManager::getTemperatureAt,
+        	py::arg("t"),
+        	py::arg("i"),
+        	py::arg("j"))
+        .def("getPressureAt", &SimManager::getPressureAt,
+        	py::arg("t"),
+        	py::arg("i"),
+        	py::arg("j"))
+        .def("getXVelocityAt", &SimManager::getXVelocityAt,
+        	py::arg("t"),
+        	py::arg("i"),
+        	py::arg("j"))
+        .def("getYVelocityAt", &SimManager::getYVelocityAt,
+        	py::arg("t"),
+        	py::arg("i"),
+        	py::arg("j"));
 }

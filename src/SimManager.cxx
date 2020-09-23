@@ -3,27 +3,10 @@
 SimManager::SimManager() {}
 SimManager::~SimManager() {}
 
-double SimManager::diffusion(size_t t, size_t i, size_t j) const
-{
-	return m_coef_x*(m_T[t][i+1][j] + m_T[t][i-1][j] - 2*m_T[t][i][j]) + m_coef_y*(m_T[t][i][j+1] + m_T[t][i][j-1] - 2*m_T[t][i][j]);
-}
-
-double SimManager::advection(size_t t, size_t i, size_t j) const
-{
-	return m_U[t][i][j]*(m_T[t][i+1][j]-m_T[t][i-1][j])/m_dx + m_V[t][i][j]*(m_T[t][i][j+1]-m_T[t][i][j-1])/m_dy;
-}
-
-double SimManager::creation(size_t t, size_t i, size_t j) const
-{
-	//return m_nu*((m_U[t][i+1][j] + m_U[t][i-1][j] - 2*m_U[t][i][j])/(m_dy*m_dy) + (m_V[t][i+1][j] + m_V[t][i-1][j] - 2*m_V[t][i][j])/(m_dx*m_dx));
-	return 0.;
-}
-
 void SimManager::defineTimeParameters(double tMax, size_t nb_steps)
 {
 	m_tMax = tMax;
 	m_nb_steps = nb_steps;
-	m_dt = tMax/nb_steps;
 }
 
 void SimManager::defineGridParameters(double Lx, double Ly, size_t nx, size_t ny)
@@ -32,8 +15,6 @@ void SimManager::defineGridParameters(double Lx, double Ly, size_t nx, size_t ny
 	m_Ly = Ly;
 	m_nx = nx;
 	m_ny = ny;
-	m_dx = Lx/(nx-1);
-	m_dy = Ly/(ny-1);
 }
 
 void SimManager::defineFluidProperties(double lambda, double rho, double cv, double mu)
@@ -42,23 +23,22 @@ void SimManager::defineFluidProperties(double lambda, double rho, double cv, dou
 	m_rho = rho;
 	m_cv = cv;
 	m_mu = mu;
-	m_nu = mu/rho;
-	m_Cv = rho*cv*m_dx*m_dy;
-	m_coef_x = lambda*m_dy/m_Cv;
-	m_coef_y = lambda*m_dx/m_Cv;
 }
 
 void SimManager::defineInitialState(std::vector<std::vector<double>> U0, std::vector<std::vector<double>> V0, std::vector<std::vector<double>> P0, std::vector<std::vector<double>> T0)
 {
-	m_U = std::vector<std::vector<std::vector<double>>>(m_nb_steps+1, std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.)));
-	m_V = std::vector<std::vector<std::vector<double>>>(m_nb_steps+1, std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.)));
-	m_P = std::vector<std::vector<std::vector<double>>>(m_nb_steps+1, std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.)));
-	m_T = std::vector<std::vector<std::vector<double>>>(m_nb_steps+1, std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.)));
-	
-	m_U[0] = U0;
-	m_V[0] = V0;
-	m_P[0] = P0;
-	m_T[0] = T0;
+	m_data.reset_size(m_nb_steps, m_nx, m_ny);
+
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		for (size_t j = 0; j < m_ny; j++)
+		{
+			m_data.setTemperatureAt(0, i, j, T0[i][j]);
+			m_data.setPressureAt(0, i, j, P0[i][j]);
+			m_data.setXVelocityAt(0, i, j, U0[i][j]);
+			m_data.setYVelocityAt(0, i, j, V0[i][j]);
+		}
+	}
 }
 
 void SimManager::defineBoundaryConditions(std::string type, double value)
@@ -81,75 +61,147 @@ void SimManager::defineBoundaryConditions(std::string type, double value)
 	}
 }
 
-void SimManager::computeFlow()
+/*
+double SimManager::get_tMax() const
 {
-	IncompressibleKernel kernel;
-	
-	kernel.defineTimeParameters(m_tMax, m_nb_steps);
-	kernel.defineGridParameters(m_Lx, m_Ly, m_nx, m_ny);
-	//kernel.defineBodyShape(...)
-	kernel.defineFluidProperties(m_rho, m_mu);
-	kernel.defineInitialState(m_U[0], m_V[0], m_P[0]);
-	
-	kernel.simulate();
-
-	m_U = kernel.getU();
-	m_V = kernel.getV();
-	m_P = kernel.getP();
+	return m_tMax;
 }
+
+size_t SimManager::get_nb_steps() const
+{
+	return m_nb_steps;
+}
+
+double SimManager::get_dt() const
+{
+	return m_dt;
+}
+
+double SimManager::get_Lx() const
+{
+	return m_Lx;
+}
+
+double SimManager::get_Ly() const
+{
+	return m_Ly;
+}
+
+size_t SimManager::get_nx() const
+{
+	return m_nx;
+}
+
+size_t SimManager::get_ny() const
+{
+	return m_ny;
+}
+
+double SimManager::get_dx() const
+{
+	return m_dx;
+}
+
+double SimManager::get_dy() const
+{
+	return m_dy;
+}
+
+double SimManager::get_lambda() const
+{
+	return m_lambda;
+}
+
+double SimManager::get_rho() const
+{
+	return m_rho;
+}
+
+double SimManager::get_cv() const
+{
+	return m_cv;
+}
+
+double SimManager::get_mu() const
+{
+	return m_mu;
+}
+
+double SimManager::get_nu() const
+{
+	return m_nu;
+}
+
+double SimManager::get_Cv() const
+{
+	return m_Cv;
+}
+
+bool SimManager::get_temp_BC() const
+{
+	return m_temp_BC;
+}
+
+bool SimManager::get_flux_BC() const
+{
+	return m_flux_BC;
+}
+
+double SimManager::get_BC_value() const
+{
+	return m_BC_value;
+}
+
+double SimManager::get_press_err_max() const
+{
+	return m_press_err_max;
+}
+*/
 
 void SimManager::launchSimulation()
 {
-	computeFlow();
-
-	for (size_t t = 0; t < m_nb_steps; t++)
-	{
-		for (size_t i = 1; i < m_nx-1; i++)
-		{
-			for (size_t j = 1; j < m_ny-1; j++)
-			{
-				m_T[t+1][i][j] = m_T[t][i][j] + m_dt * (diffusion(t, i, j) - advection(t, i, j) + creation(t, i, j));
-			}
-		}
-
-		if (m_temp_BC)
-		{
-			for (size_t i = 0; i < m_nx; i++)
-			{
-				m_T[t+1][i][0] = m_BC_value;
-				m_T[t+1][i][m_ny-1] = m_BC_value;
-			}
-			for (size_t j = 1; j < m_ny-1; j++)
-			{
-				m_T[t+1][0][j] = m_BC_value;
-				m_T[t+1][m_nx-1][j] = m_BC_value;
-			}
-		}
-		else if (m_flux_BC)
-		{
-			for (size_t i = 1; i < m_nx-1; i++)
-			{
-				m_T[t+1][i][0] = m_T[t][i][0] + m_dt * (m_coef_x*(m_T[t][i+1][0] + m_T[t][i-1][0] - 2*m_T[t][i][0]) + m_coef_y*m_BC_value);
-				m_T[t+1][i][m_ny-1] = m_T[t][i][m_ny-1] + m_dt * (m_coef_x*(m_T[t][i+1][m_ny-1] + m_T[t][i-1][m_ny-1] - 2*m_T[t][i][m_ny-1]) + m_coef_y*m_BC_value);
-			}
-			for (size_t j = 1; j < m_ny-1; j++)
-			{
-				m_T[t+1][0][j] = m_T[t][0][j] + m_dt * (m_coef_y*(m_T[t][0][j+1] + m_T[t][0][j-1] - 2*m_T[t][0][j]) + m_coef_x*m_BC_value);
-				m_T[t+1][m_nx-1][j] = m_T[t][m_nx-1][j] + m_dt * (m_coef_y*(m_T[t][m_nx-1][j+1] + m_T[t][m_nx-1][j-1] - 2*m_T[t][m_nx-1][j]) + m_coef_x*m_BC_value);
-			}
-			m_T[t+1][0][0] = m_T[t][0][0] + m_dt * (m_coef_x + m_coef_y) * m_BC_value;
-			m_T[t+1][0][m_ny-1] = m_T[t][0][m_ny-1] + m_dt * (m_coef_x + m_coef_y) * m_BC_value;
-			m_T[t+1][m_nx-1][0] = m_T[t][m_nx-1][0] + m_dt * (m_coef_x + m_coef_y) * m_BC_value;
-			m_T[t+1][m_nx-1][m_ny-1] = m_T[t][m_nx-1][m_ny-1] + m_dt * (m_coef_x + m_coef_y) * m_BC_value;
-		}
-		else
-		{
-			throw std::logic_error("Bad definition of boundary conditions");
-		}
-	}
+	IncompressibleKernel flow_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_rho, m_mu, m_press_err_max);
+	flow_kernel.simulate();
+	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cv, m_temp_BC, m_flux_BC, m_BC_value);
+	th_kernel.simulate();
 }
 
-std::vector<std::vector<std::vector<double>>> SimManager::getResults() const
+double SimManager::getTemperatureAt(size_t t, size_t i, size_t j) const
 {
-	return m_T;
+	return m_data.getTemperatureAt(t, i, j);
+}
+
+double SimManager::getPressureAt(size_t t, size_t i, size_t j) const
+{
+	return m_data.getPressureAt(t, i, j);
+}
+
+double SimManager::getXVelocityAt(size_t t, size_t i, size_t j) const
+{
+	return m_data.getXVelocityAt(t, i, j);
+}
+
+double SimManager::getYVelocityAt(size_t t, size_t i, size_t j) const
+{
+	return m_data.getYVelocityAt(t, i, j);
+}
+
+void SimManager::setTemperatureAt(size_t t, size_t i, size_t j, double T)
+{
+	m_data.setTemperatureAt(t, i, j, T);
+}
+
+void SimManager::setPressureAt(size_t t, size_t i, size_t j, double P)
+{
+	m_data.setPressureAt(t, i, j, P);
+}
+
+void SimManager::setXVelocityAt(size_t t, size_t i, size_t j, double U)
+{
+	m_data.setXVelocityAt(t, i, j, U);
+}
+
+void SimManager::setYVelocityAt(size_t t, size_t i, size_t j, double V)
+{
+	m_data.setYVelocityAt(t, i, j, V);
 }

@@ -2,10 +2,14 @@
 
 #include <vector>
 #include <cmath>
+#include <iostream>
+#include "DataKeeper.hxx"
 
 class IncompressibleKernel
 {
 private:
+	DataKeeper &m_data;
+
 	double m_tMax;
 	size_t m_nb_steps;
 	double m_dt;
@@ -20,41 +24,44 @@ private:
 	double m_mu;
 	double m_nu;
 
-	std::vector<std::vector<std::vector<double>>> m_U;
-	std::vector<std::vector<std::vector<double>>> m_V;
-	std::vector<std::vector<std::vector<double>>> m_P;
+	double m_err_max;
+
+	std::vector<std::vector<double>> m_U;
+	std::vector<std::vector<double>> m_V;
+	std::vector<std::vector<double>> m_P;
+	std::vector<std::vector<double>> m_P_tmp;
+
+	double m_coef_1;
+	double m_coef_2;
+	double m_coef_3;
 
 	void initialize();
+	void getAllFieldsAt(size_t t);
+	void getVelocityFieldsAt(size_t t);
 
-	double dudx(size_t t, size_t i, size_t j) const;
-	double dudy(size_t t, size_t i, size_t j) const;
-	double dvdx(size_t t, size_t i, size_t j) const;
-	double dvdy(size_t t, size_t i, size_t j) const;
+	double dudx(size_t i, size_t j) const;
+	double dudy(size_t i, size_t j) const;
+	double dvdx(size_t i, size_t j) const;
+	double dvdy(size_t i, size_t j) const;
 
-	double laplacian_u(size_t t, size_t i, size_t j) const;
-	double laplacian_v(size_t t, size_t i, size_t j) const;
+	double laplacian_u(size_t i, size_t j) const;
+	double laplacian_v(size_t i, size_t j) const;
 
-	double advection_u(size_t t, size_t i, size_t j) const;
-	double advection_v(size_t t, size_t i, size_t j) const;
-	double diffusion_u(size_t t, size_t i, size_t j) const;
-	double diffusion_v(size_t t, size_t i, size_t j) const;
-	double pressure_u(size_t t, size_t i, size_t j) const;
-	double pressure_v(size_t t, size_t i, size_t j) const;
+	double advection_u(size_t i, size_t j) const;
+	double advection_v(size_t i, size_t j) const;
+	double diffusion_u(size_t i, size_t j) const;
+	double diffusion_v(size_t i, size_t j) const;
+	double pressure_u(size_t i, size_t j) const;
+	double pressure_v(size_t i, size_t j) const;
 
 	void updateVelocityField(size_t t);
 	void updatePressureField(size_t t, double mean_error_max);
 
+	void printSimulationProgression(size_t t) const;
+
 public:
-	IncompressibleKernel();
+	IncompressibleKernel(DataKeeper& data, double tMax, size_t nb_steps, double Lx, double Ly, size_t nx, size_t ny, double rho, double mu, double err_max);
 	~IncompressibleKernel();
 
-	void defineTimeParameters(double tMax, size_t nb_steps);
-	void defineGridParameters(double Lx, double Ly, size_t nx, size_t ny);
-	void defineBodyShape(std::vector<std::vector<bool>> body_shape);
-	void defineFluidProperties(double rho, double mu);
-	void defineInitialState(std::vector<std::vector<double>> U0, std::vector<std::vector<double>> V0, std::vector<std::vector<double>> P0);
 	void simulate();
-	std::vector<std::vector<std::vector<double>>> getU() const;
-	std::vector<std::vector<std::vector<double>>> getV() const;
-	std::vector<std::vector<std::vector<double>>> getP() const;
 };
