@@ -18,8 +18,6 @@ private:
 	size_t m_nx, m_ny;
 	double m_dx, m_dy;
 
-	std::vector<std::vector<bool>> v_body;
-
 	double m_rho;
 	double m_mu;
 	double m_nu;
@@ -30,6 +28,8 @@ private:
 	std::vector<std::vector<double>> m_V;
 	std::vector<std::vector<double>> m_P;
 	std::vector<std::vector<double>> m_P_tmp;
+
+	std::vector<std::vector<bool>> v_body;
 
 	double m_coef_1;
 	double m_coef_2;
