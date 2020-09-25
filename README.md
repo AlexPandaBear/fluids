@@ -1,6 +1,6 @@
 # HEAT EQUATION SOLVER FOR UNSTEADY INCOMPRESSIBLE FLOWS
 
-This project is a solver for the Navier-Stokes model in the case of 2D incompressible flows. Since the thermal and dynamic aspects of the flow are separable (see incompressible Navier-Stokes equations below), the code first computes the motion, and then solves the heat equation using the known motion. During the computation of the motion, the temporal integration of the velocity is performed explicitly, but since one can only derive a Poisson equation for the pressure, the pressure is computed with an iterative algorithm at each time step.
+This project is a solver for the Navier-Stokes model in the case of 2D incompressible flows. Since the thermal and dynamic aspects of the flow are separable (see incompressible Navier-Stokes equations below), the code first computes the motion, and then solves the heat equation using the known motion.
 
 <p align="center">
 	<img src=mass_eq.gif />
@@ -14,7 +14,9 @@ This project is a solver for the Navier-Stokes model in the case of 2D incompres
 	<img src=temp_eq.gif />
 </p>
 
-This project is coded as a C++ library interfaced with Python scripts, to benefit from the performance of the C++, the flexibility of Python and the graphical rendering of the Matplotlib library. The interface is done with the PyBind11 library.
+Regarding the computation of the fluid motion, velocity and pressure variables are integrated with very different techniques. The temporal integration of the velocity is performed explicitly by differenciating all the differential operators of the momentum equation with an explicit Euler scheme. On the other hand, with this model one can only derive a Poisson equation for the pressure, so the pressure part of the problem is solved with a LU decomposition of the matricial system associated thanks to the Doolittle Algorithm.
+
+This project is coded as a C++ library interfaced with Python scripts, to benefit from the performance of the C++, the flexibility of Python and the graphical rendering of the Matplotlib library. The interface is realized with the PyBind11 library.
 
 ## Requirements
 To compile the library :
