@@ -71,6 +71,7 @@ void DataKeeper::setYVelocityAt(size_t t, size_t i, size_t j, double V)
 void DataKeeper::saveData(std::string file_name) const
 {
 	std::ofstream outfile;
+	//std::cout << "yolo" << std::endl;
 	outfile.open(file_name);
 
 	if (!outfile.is_open())

@@ -15,8 +15,8 @@ file_name = "../data/test"
 #%% MESHING
 Lx = 10
 Ly = 10
-nx = 100
-ny = 100
+nx = 50
+ny = 50
 
 
 #%% INTEGRATION
@@ -55,7 +55,7 @@ for i in range(nx):
 		U0[i,j] = - U_max * np.sin(np.pi*j_star) * np.cos(0.5*np.pi*i_star)
 		V0[i,j] = V_max * np.sin(np.pi*i_star) * np.cos(0.5*np.pi*j_star)
 
-P0_max = 10**5
+P0_max = 0.
 
 for i in range(nx):
     for j in range(ny):
@@ -63,8 +63,8 @@ for i in range(nx):
 
 
 #%% PLOT
-plot_temperature = False
-plot_pressure = False
+plot_temperature = True
+plot_pressure = True
 plot_velocity = True
 
 max_frames = 100

@@ -66,7 +66,7 @@ if ( "${isSystemDir}" STREQUAL "-1" )
 endif ( "${isSystemDir}" STREQUAL "-1" )
 
 
-add_library ( vf SHARED SimManager.cxx IncompressibleKernel.cxx ThermalKernel.cxx DataKeeper.cxx )
+add_library ( vf SHARED SimManager.cxx IncompressibleKernel.cxx PoissonSolver.cxx ThermalKernel.cxx DataKeeper.cxx )
 install (
   TARGETS vf
   LIBRARY DESTINATION lib
