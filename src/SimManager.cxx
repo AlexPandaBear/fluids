@@ -25,7 +25,7 @@ void SimManager::defineFluidProperties(double lambda, double rho, double cv, dou
 	m_mu = mu;
 }
 
-void SimManager::defineInitialState(std::vector<std::vector<double>> U0, std::vector<std::vector<double>> V0, std::vector<std::vector<double>> P0, std::vector<std::vector<double>> T0)
+void SimManager::defineInitialState(std::vector<std::vector<double>> U0, std::vector<std::vector<double>> V0, std::vector<std::vector<double>> T0)
 {
 	m_data.reset_size(m_nb_steps, m_nx, m_ny);
 
@@ -34,14 +34,27 @@ void SimManager::defineInitialState(std::vector<std::vector<double>> U0, std::ve
 		for (size_t j = 0; j < m_ny; j++)
 		{
 			m_data.setTemperatureAt(0, i, j, T0[i][j]);
-			m_data.setPressureAt(0, i, j, P0[i][j]);
 			m_data.setXVelocityAt(0, i, j, U0[i][j]);
 			m_data.setYVelocityAt(0, i, j, V0[i][j]);
 		}
 	}
 }
 
-void SimManager::defineBoundaryConditions(std::string type, double value)
+void SimManager::defineUniformDynamicBoundaryConditions(double U_bc, double V_bc, double P_bc)
+{
+	m_U_BC = std::vector<double>(2*m_nx*m_ny, U_bc);
+	m_V_BC = std::vector<double>(2*m_nx*m_ny, V_bc);
+	m_P_BC = std::vector<double>(2*m_nx*m_ny, P_bc);
+}
+
+void SimManager::defineDynamicBoundaryConditions(std::vector<double> v_U_bc, std::vector<double> v_V_bc, std::vector<double> v_P_bc)
+{
+	m_U_BC = v_U_bc;
+	m_V_BC = v_V_bc;
+	m_P_BC = v_P_bc;
+}
+
+void SimManager::defineThermalBoundaryConditions(std::string type, double value)
 {
 	if (type == "temp")
 	{
@@ -61,16 +74,12 @@ void SimManager::defineBoundaryConditions(std::string type, double value)
 	}
 }
 
-void SimManager::defineErrorTolerance(double press_err_max)
-{
-	m_press_err_max = press_err_max;
-}
-
-
 void SimManager::launchSimulation()
 {
-	IncompressibleKernel flow_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_rho, m_mu, m_press_err_max);
+	IncompressibleKernel flow_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_rho, m_mu);
+	flow_kernel.defineBoundaryConditions(m_U_BC, m_V_BC, m_P_BC);
 	flow_kernel.simulate();
+
 	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cv, m_temp_BC, m_flux_BC, m_BC_value);
 	th_kernel.simulate();
 }
@@ -124,100 +133,3 @@ void SimManager::loadData(std::string file_name)
 {
 	m_data.loadData(file_name);
 }
-
-/*
-double SimManager::get_tMax() const
-{
-	return m_tMax;
-}
-
-size_t SimManager::get_nb_steps() const
-{
-	return m_nb_steps;
-}
-
-double SimManager::get_dt() const
-{
-	return m_dt;
-}
-
-double SimManager::get_Lx() const
-{
-	return m_Lx;
-}
-
-double SimManager::get_Ly() const
-{
-	return m_Ly;
-}
-
-size_t SimManager::get_nx() const
-{
-	return m_nx;
-}
-
-size_t SimManager::get_ny() const
-{
-	return m_ny;
-}
-
-double SimManager::get_dx() const
-{
-	return m_dx;
-}
-
-double SimManager::get_dy() const
-{
-	return m_dy;
-}
-
-double SimManager::get_lambda() const
-{
-	return m_lambda;
-}
-
-double SimManager::get_rho() const
-{
-	return m_rho;
-}
-
-double SimManager::get_cv() const
-{
-	return m_cv;
-}
-
-double SimManager::get_mu() const
-{
-	return m_mu;
-}
-
-double SimManager::get_nu() const
-{
-	return m_nu;
-}
-
-double SimManager::get_Cv() const
-{
-	return m_Cv;
-}
-
-bool SimManager::get_temp_BC() const
-{
-	return m_temp_BC;
-}
-
-bool SimManager::get_flux_BC() const
-{
-	return m_flux_BC;
-}
-
-double SimManager::get_BC_value() const
-{
-	return m_BC_value;
-}
-
-double SimManager::get_press_err_max() const
-{
-	return m_press_err_max;
-}
-*/

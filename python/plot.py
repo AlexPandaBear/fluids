@@ -61,7 +61,7 @@ if plot_temperature:
     ax = fig.add_subplot(111, projection='3d')
 
     plot = [ax.plot_surface(X, Y, T[:,:,0], color='0.75', rstride=1, cstride=1)]
-    ax.set_zlim(0,T0_max)
+    #ax.set_zlim(0,T0_max)
 
 
     frames = range(nb_steps+1)
@@ -104,8 +104,8 @@ if plot_velocity:
     arr_y = np.zeros((nx,ny,nb_steps+1))
 
     h = min(Lx/(nx-1), Ly/(ny-1))
-    u0_max = np.amax(U0)
-    v0_max = np.amax(V0)
+    u0_max = np.amax(U0)+1
+    v0_max = np.amax(V0)+1
 
     coef_u = h/u0_max
     coef_v = h/v0_max

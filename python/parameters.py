@@ -13,23 +13,30 @@ file_name = "../data/test"
 
 
 #%% MESHING
-Lx = 10
-Ly = 10
+Lx = 20
+Ly = 5
 nx = 50
 ny = 50
 
 
 #%% INTEGRATION
-tEnd = 10
-nb_steps = 200
-pressure_err = 10.
+tEnd = 1
+nb_steps = 500
 
 
 #%% FLUID PROPERTIES
 lamb = 1
 rho = 1000
 cv = 4000
-mu = 1
+mu = 100
+
+
+#%% BOUNDARY CONDITIONS
+T_ext = 0.
+#UP-DOWN-LEFT-RIGHT
+U_BC = [0. for i in range(nx)] + [0. for i in range(nx)] + [.3 for i in range(ny)] + [.3 for i in range(ny)]
+V_BC = [0. for i in range(nx)] + [0. for i in range(nx)] + [0. for i in range(ny)] + [0. for i in range(ny)]
+P_BC = [0. for i in range(nx)] + [0. for i in range(nx)] + [0. for i in range(ny)] + [0. for i in range(ny)]
 
 
 #%% INITIAL STATE
@@ -43,23 +50,10 @@ for i in range(nx):
         r2 = (i-nx/2.)**2 + (j-ny/2.)**2
         T0[i,j] = 150*(np.exp(-0.05*r2) + np.sin(0.1*i)**2)
 
-T0_max = 500
-
-U_max = 1
-V_max = 1
-
 for i in range(nx):
 	for j in range(ny):
-		i_star = 2.*i/(nx-1) - 1.
-		j_star = 2.*j/(ny-1) - 1.
-		U0[i,j] = - U_max * np.sin(np.pi*j_star) * np.cos(0.5*np.pi*i_star)
-		V0[i,j] = V_max * np.sin(np.pi*i_star) * np.cos(0.5*np.pi*j_star)
-
-P0_max = 0.
-
-for i in range(nx):
-    for j in range(ny):
-        P0[i,j] = P0_max
+		U0[i,j] = .3
+		V0[i,j] = 0.
 
 
 #%% PLOT
@@ -67,6 +61,6 @@ plot_temperature = True
 plot_pressure = True
 plot_velocity = True
 
-max_frames = 100
+max_frames = 200
 max_arrows_x = 20
 max_arrows_y = 20

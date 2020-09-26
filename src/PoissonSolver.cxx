@@ -185,7 +185,7 @@ void PoissonSolver::solve_for_x()
 			ux_sum += mat_upper[h][k]*v_x[k];
 		}
 
-		v_x[h] = v_y[h] - ux_sum;
+		v_x[h] = (v_y[h] - ux_sum)/mat_upper[h][h];
 	}
 }
 

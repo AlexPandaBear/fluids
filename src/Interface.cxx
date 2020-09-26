@@ -33,13 +33,18 @@ PYBIND11_MODULE(_vf, m)
         .def("defineInitialState", &SimManager::defineInitialState,
         	py::arg("U0"),
         	py::arg("V0"),
-        	py::arg("P0"),
         	py::arg("T0"))
-        .def("defineBoundaryConditions", &SimManager::defineBoundaryConditions,
+        .def("defineUniformDynamicBoundaryConditions", &SimManager::defineUniformDynamicBoundaryConditions,
+            py::arg("U_bc"),
+            py::arg("V_bc"),
+            py::arg("P_bc"))
+        .def("defineDynamicBoundaryConditions", &SimManager::defineDynamicBoundaryConditions,
+            py::arg("U_bc"),
+            py::arg("V_bc"),
+            py::arg("P_bc"))
+        .def("defineThermalBoundaryConditions", &SimManager::defineThermalBoundaryConditions,
         	py::arg("type"),
         	py::arg("value"))
-        .def("defineErrorTolerance", &SimManager::defineErrorTolerance,
-        	py::arg("max_pressure_error"))
         .def("launchSimulation", &SimManager::launchSimulation)
         .def("getTemperatureAt", &SimManager::getTemperatureAt,
         	py::arg("t"),

@@ -11,23 +11,23 @@ class IncompressibleKernel
 private:
 	DataKeeper &m_data;
 
-	double m_tMax;
-	size_t m_nb_steps;
-	double m_dt;
+	const double m_tMax;
+	const size_t m_nb_steps;
+	const double m_dt;
 
-	double m_Lx, m_Ly;
-	size_t m_nx, m_ny;
-	double m_dx, m_dy;
+	const double m_Lx, m_Ly;
+	const size_t m_nx, m_ny;
+	const double m_dx, m_dy;
 
-	double m_rho;
-	double m_mu;
-	double m_nu;
+	const double m_rho;
+	const double m_mu;
+	const double m_nu;
 
 	std::vector<std::vector<double>> m_U;
 	std::vector<std::vector<double>> m_V;
 	std::vector<std::vector<double>> m_P;
 
-	void getAllFieldsAt(size_t t);
+	void getPressureFieldAt(size_t t);
 	void getVelocityFieldsAt(size_t t);
 
 	double dudx(size_t i, size_t j) const;
@@ -55,13 +55,15 @@ private:
 	double pressure_v(size_t i, size_t j) const;
 
 	void updateVelocityField(size_t t);
-	void updatePressureField(PoissonSolver& solver, size_t t);
+	void computePressureField(PoissonSolver& solver, size_t t);
 
 	void printSimulationProgression(size_t t) const;
 
 public:
-	IncompressibleKernel(DataKeeper& data, double tMax, size_t nb_steps, double Lx, double Ly, size_t nx, size_t ny, double rho, double mu, double err_max);
+	IncompressibleKernel(DataKeeper& data, double tMax, size_t nb_steps, double Lx, double Ly, size_t nx, size_t ny, double rho, double mu);
 	~IncompressibleKernel();
+
+	void defineBoundaryConditions(std::vector<double> v_U_bc, std::vector<double> v_V_bc, std::vector<double> v_P_bc);
 
 	void simulate();
 };
