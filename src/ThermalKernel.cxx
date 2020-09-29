@@ -1,63 +1,183 @@
 #include "ThermalKernel.hxx"
 
-ThermalKernel::ThermalKernel(DataKeeper& data, double tMax, size_t nb_steps, double Lx, double Ly, size_t nx, size_t ny, double lambda, double rho, double cv, bool temp_BC, bool flux_BC, double BC_value) :
+ThermalKernel::ThermalKernel(DataKeeper& data, double tMax, size_t nb_steps, double theta, double accuracy, double Lx, double Ly, size_t nx, size_t ny, double lambda, double rho, double cp, double T_BC) :
 	m_data(data),
 	m_tMax(tMax),
 	m_nb_steps(nb_steps),
+	m_dt(tMax/nb_steps),
+	m_theta(theta),
+	m_accuracy(accuracy),
 	m_Lx(Lx),
 	m_Ly(Ly),
 	m_nx(nx),
 	m_ny(ny),
+	m_dx(Lx/(nx-1)),
+	m_dy(Ly/(ny-1)),
+	m_nb_eq(nx*ny),
 	m_lambda(lambda),
 	m_rho(rho),
-	m_cv(cv),
-	m_temp_BC(temp_BC),
-	m_flux_BC(flux_BC),
-	m_BC_value(BC_value)
+	m_cp(cp),
+	m_K(lambda/(rho*cp)),
+	m_T_BC(T_BC),
+	m_kx(m_K*m_dt/(m_dx*m_dx)),
+	m_ky(m_K*m_dt/(m_dy*m_dy))
 {
-	m_dt = m_tMax/m_nb_steps;
-	m_dx = m_Lx/(m_nx-1);
-	m_dy = m_Ly/(m_ny-1);
-
-	m_Cv = m_rho*m_cv*m_dx*m_dy;
-
-	m_coef_x = m_lambda*m_dy/m_Cv;
-	m_coef_y = m_lambda*m_dx/m_Cv;
-
+	m_u = std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.));
+	m_v = std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.));
 	m_T = std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.));
-	m_U = std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.));
-	m_V = std::vector<std::vector<double>>(m_nx, std::vector<double>(m_ny, 0.));
+	
+	mat_A_a = std::vector<double>(m_nb_eq, 1. + 2.*m_theta*(m_kx + m_ky));
+	mat_A_b = std::vector<double>(m_nb_eq, 0.);
+	mat_A_c = std::vector<double>(m_nb_eq, 0.);
+	mat_A_d = std::vector<double>(m_nb_eq, 0.);
+	mat_A_e = std::vector<double>(m_nb_eq, 0.);
+
+	vec_X = std::vector<double>(m_nb_eq, 0.);
+	vec_B = std::vector<double>(m_nb_eq, 0.);
 }
 
 ThermalKernel::~ThermalKernel() {}
 
-void ThermalKernel::getAllFieldsAt(size_t t)
+void ThermalKernel::display()
+{
+	for (size_t l = 0; l < m_nb_eq; l++)
+	{
+		std::cout << mat_A_e[l] << "..." << mat_A_c[l] << " " << mat_A_a[l] << " " << mat_A_b[l] << "..." << mat_A_d[l] << std::endl;
+	}
+}
+
+void ThermalKernel::computeMatrixA(size_t t)
 {
 	for (size_t i = 0; i < m_nx; i++)
 	{
 		for (size_t j = 0; j < m_ny; j++)
 		{
-			m_T[i][j] = m_data.getTemperatureAt(t, i, j);
-			m_U[i][j] = m_data.getXVelocityAt(t, i, j);
-			m_V[i][j] = m_data.getYVelocityAt(t, i, j);
+			m_u[i][j] = (0.5*m_dt/m_dx)*m_data.getXVelocityAt(t+1, i, j);
+			m_v[i][j] = (0.5*m_dt/m_dy)*m_data.getYVelocityAt(t+1, i, j);
+		}
+	}
+
+	for (size_t j = 0; j < m_ny; j++)
+	{
+		for (size_t i = 0; i < m_nx; i++)
+		{
+			mat_A_b[i + m_nx*j] = - m_theta * (m_kx - m_u[i][j]);
+			mat_A_c[i + m_nx*j] = - m_theta * (m_kx + m_u[i][j]);
+			mat_A_d[i + m_nx*j] = - m_theta * (m_ky - m_v[i][j]);
+			mat_A_e[i + m_nx*j] = - m_theta * (m_ky + m_v[i][j]);
 		}
 	}
 }
 
-double ThermalKernel::diffusion(size_t i, size_t j) const
+void ThermalKernel::computeVectorB(size_t t)
 {
-	return m_coef_x*(m_T[i+1][j] + m_T[i-1][j] - 2*m_T[i][j]) + m_coef_y*(m_T[i][j+1] + m_T[i][j-1] - 2*m_T[i][j]);
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		for (size_t j = 0; j < m_ny; j++)
+		{
+			m_u[i][j] = (0.5*m_dt/m_dx)*m_data.getXVelocityAt(t, i, j);
+			m_v[i][j] = (0.5*m_dt/m_dy)*m_data.getYVelocityAt(t, i, j);
+			m_T[i][j] = m_data.getTemperatureAt(t, i, j);
+
+			vec_B[i + m_nx*j] = (1. - 2.*(1. - m_theta)*(m_kx + m_ky)) * m_T[i][j];
+		}
+	}
+
+	for (size_t j = 0; j < m_ny; j++)
+	{
+		vec_B[m_nx*j] += (1. - m_theta)*(m_kx - m_u[0][j]) * m_T[1][j];
+		vec_B[m_nx*j] += (1. - m_theta)*(m_kx + m_u[0][j]) * m_T_BC;
+
+		for (size_t i = 1; i < m_nx-1; i++)
+		{
+			vec_B[i + m_nx*j] += (1. - m_theta)*(m_kx - m_u[i][j]) * m_T[i+1][j];
+			vec_B[i + m_nx*j] += (1. - m_theta)*(m_kx + m_u[i][j]) * m_T[i-1][j];
+		}
+
+		vec_B[(m_nx-1) + m_nx*j] += (1. - m_theta)*(m_kx - m_u[m_nx-1][j]) * m_T_BC;
+		vec_B[(m_nx-1) + m_nx*j] += (1. - m_theta)*(m_kx + m_u[m_nx-1][j]) * m_T[m_nx-2][j];
+	}
+
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		vec_B[i] += (1. - m_theta)*(m_ky - m_v[i][0]) * m_T[i][1];
+		vec_B[i] += (1. - m_theta)*(m_ky + m_v[i][0]) * m_T_BC;
+
+		for (size_t j = 1; j < m_ny-1; j++)
+		{
+			vec_B[i + m_nx*j] += (1. - m_theta)*(m_ky - m_v[i][j]) * m_T[i][j+1];
+			vec_B[i + m_nx*j] += (1. - m_theta)*(m_ky + m_v[i][j]) * m_T[i][j-1];
+		}
+
+		vec_B[i + m_nx*(m_ny-1)] += (1. - m_theta)*(m_ky - m_v[i][m_ny-1]) * m_T_BC;
+		vec_B[i + m_nx*(m_ny-1)] += (1. - m_theta)*(m_ky + m_v[i][m_ny-1]) * m_T[i][m_ny-2];
+	}
 }
 
-double ThermalKernel::advection(size_t i, size_t j) const
+void ThermalKernel::solve_GaussSeidel()
 {
-	return m_U[i][j]*(m_T[i+1][j]-m_T[i-1][j])/m_dx + m_V[i][j]*(m_T[i][j+1]-m_T[i][j-1])/m_dy;
-}
+	double mean_diff;
+	double new_xi;
 
-double ThermalKernel::creation(size_t i, size_t j) const
-{
-	//return m_nu*((m_U[i+1][j] + m_U[i-1][j] - 2*m_U[i][j])/(m_dy*m_dy) + (m_V[i+1][j] + m_V[i-1][j] - 2*m_V[i][j])/(m_dx*m_dx));
-	return 0.;
+	do
+	{
+		mean_diff = 0.;
+
+		for (size_t i = 0; i < m_nx; i++)
+		{
+			for (size_t j = 0; j < m_ny; j++)
+			{
+				new_xi = vec_B[i + m_nx*j];
+
+				if (i == m_nx-1)
+				{
+					new_xi -= mat_A_b[i + m_nx*j] * m_T_BC;
+					//new_xi -= mat_A_b[i + m_nx*j] * vec_X[m_ny*j];
+				}
+				else
+				{
+					new_xi -= mat_A_b[i + m_nx*j] * vec_X[i + m_nx*j + 1];
+				}
+
+				if (i == 0)
+				{
+					new_xi -= mat_A_c[i + m_nx*j] * m_T_BC;
+					//new_xi -= mat_A_c[i + m_nx*j] * vec_X[m_nx*(j+1)-1];
+				}
+				else
+				{
+					new_xi -= mat_A_c[i + m_nx*j] * vec_X[i + m_nx*j - 1];
+				}
+
+				if (j == m_ny-1)
+				{
+					new_xi -= mat_A_d[i + m_nx*j] * m_T_BC;
+				}
+				else
+				{
+					new_xi -= mat_A_d[i + m_nx*j] * vec_X[i + m_nx*j + m_nx];
+				}
+
+				if (j == 0)
+				{
+					new_xi -= mat_A_e[i + m_nx*j] * m_T_BC;
+				}
+				else
+				{
+					new_xi -= mat_A_e[i + m_nx*j] * vec_X[i + m_nx*j - m_nx];
+				}
+				
+				new_xi /= mat_A_a[i + m_nx*j];
+				mean_diff += abs(new_xi - vec_X[i + m_nx*j]);
+				vec_X[i + m_nx*j] = new_xi;
+			}
+
+		}
+
+		mean_diff /= m_nb_eq;
+		
+	}
+	while (mean_diff > m_accuracy);
 }
 
 void ThermalKernel::printSimulationProgression(size_t t) const
@@ -69,52 +189,30 @@ void ThermalKernel::simulate()
 {
 	std::cout << "Solving heat equation..." << std::endl;
 
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		for (size_t j = 0; j < m_ny; j++)
+		{
+			vec_X[i + m_nx*j] = m_data.getTemperatureAt(0, i, j);
+		}
+	}
+
 	for (size_t t = 0; t < m_nb_steps; t++)
 	{
-		getAllFieldsAt(t);
 		printSimulationProgression(t);
+		computeMatrixA(t);
+		computeVectorB(t);
+		//display();
+		solve_GaussSeidel();
 
-		for (size_t i = 1; i < m_nx-1; i++)
+		for (size_t j = 0; j < m_ny; j++)
 		{
-			for (size_t j = 1; j < m_ny-1; j++)
-			{
-				m_data.setTemperatureAt(t+1, i, j, m_T[i][j] + m_dt * (diffusion(i, j) - advection(i, j) + creation(i, j)));
-			}
-		}
-
-		if (m_temp_BC)
-		{
+			//std::cout << std::endl;
 			for (size_t i = 0; i < m_nx; i++)
 			{
-				m_data.setTemperatureAt(t+1, i, 0, m_BC_value);
-				m_data.setTemperatureAt(t+1, i, m_ny-1, m_BC_value);
+				m_data.setTemperatureAt(t+1, i, j, vec_X[i + m_nx*j]);
+				//std::cout << vec_X[i + m_nx*j] << "  ";
 			}
-			for (size_t j = 1; j < m_ny-1; j++)
-			{
-				m_data.setTemperatureAt(t+1, 0, j, m_BC_value);
-				m_data.setTemperatureAt(t+1, m_nx-1, j, m_BC_value);
-			}
-		}
-		else if (m_flux_BC)
-		{
-			for (size_t i = 1; i < m_nx-1; i++)
-			{
-				m_data.setTemperatureAt(t+1, i, 0, m_T[i][0] + m_dt * (m_coef_x*(m_T[i+1][0] + m_T[i-1][0] - 2*m_T[i][0]) + m_coef_y*m_BC_value));
-				m_data.setTemperatureAt(t+1, i, m_ny-1, m_T[i][m_ny-1] + m_dt * (m_coef_x*(m_T[i+1][m_ny-1] + m_T[i-1][m_ny-1] - 2*m_T[i][m_ny-1]) + m_coef_y*m_BC_value));
-			}
-			for (size_t j = 1; j < m_ny-1; j++)
-			{
-				m_data.setTemperatureAt(t+1, 0, j, m_T[0][j] + m_dt * (m_coef_y*(m_T[0][j+1] + m_T[0][j-1] - 2*m_T[0][j]) + m_coef_x*m_BC_value));
-				m_data.setTemperatureAt(t+1, m_nx-1, j, m_T[m_nx-1][j] + m_dt * (m_coef_y*(m_T[m_nx-1][j+1] + m_T[m_nx-1][j-1] - 2*m_T[m_nx-1][j]) + m_coef_x*m_BC_value));
-			}
-			m_data.setTemperatureAt(t+1, 0, 0, m_T[0][0] + m_dt * (m_coef_x + m_coef_y) * m_BC_value);
-			m_data.setTemperatureAt(t+1, 0, m_ny-1, m_T[0][m_ny-1] + m_dt * (m_coef_x + m_coef_y) * m_BC_value);
-			m_data.setTemperatureAt(t+1, m_nx-1, 0, m_T[m_nx-1][0] + m_dt * (m_coef_x + m_coef_y) * m_BC_value);
-			m_data.setTemperatureAt(t+1, m_nx-1, m_ny-1, m_T[m_nx-1][m_ny-1] + m_dt * (m_coef_x + m_coef_y) * m_BC_value);
-		}
-		else
-		{
-			throw std::logic_error("Bad definition of boundary conditions");
 		}
 	}
 

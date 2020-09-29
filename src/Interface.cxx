@@ -45,6 +45,9 @@ PYBIND11_MODULE(_vf, m)
         .def("defineThermalBoundaryConditions", &SimManager::defineThermalBoundaryConditions,
         	py::arg("type"),
         	py::arg("value"))
+        .def("defineThermalIntegrationParameters", &SimManager::defineThermalIntegrationParameters,
+            py::arg("theta"),
+            py::arg("accuracy"))
         .def("launchSimulation", &SimManager::launchSimulation)
         .def("getTemperatureAt", &SimManager::getTemperatureAt,
         	py::arg("t"),

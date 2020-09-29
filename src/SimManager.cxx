@@ -17,11 +17,11 @@ void SimManager::defineGridParameters(double Lx, double Ly, size_t nx, size_t ny
 	m_ny = ny;
 }
 
-void SimManager::defineFluidProperties(double lambda, double rho, double cv, double mu)
+void SimManager::defineFluidProperties(double lambda, double rho, double cp, double mu)
 {
 	m_lambda = lambda;
 	m_rho = rho;
-	m_cv = cv;
+	m_cp = cp;
 	m_mu = mu;
 }
 
@@ -60,18 +60,18 @@ void SimManager::defineThermalBoundaryConditions(std::string type, double value)
 	{
 		m_temp_BC = true;
 		m_flux_BC = false;
-		m_BC_value = value;
-	}
-	else if (type == "flux")
-	{
-		m_temp_BC = false;
-		m_flux_BC = true;
-		m_BC_value = value;
+		m_T_BC = value;
 	}
 	else
 	{
 		throw std::invalid_argument("Bad boundary condition type");
 	}
+}
+
+void SimManager::defineThermalIntegrationParameters(double theta, double accuracy)
+{
+	m_theta_th = theta;
+	m_accuracy_th = accuracy;
 }
 
 void SimManager::launchSimulation()
@@ -80,7 +80,7 @@ void SimManager::launchSimulation()
 	flow_kernel.defineBoundaryConditions(m_U_BC, m_V_BC, m_P_BC);
 	flow_kernel.simulate();
 
-	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cv, m_temp_BC, m_flux_BC, m_BC_value);
+	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_theta_th, m_accuracy_th, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cp, m_T_BC);
 	th_kernel.simulate();
 }
 

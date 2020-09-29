@@ -48,52 +48,6 @@ for i in range(nx):
         X[i,j] = x[i]
         Y[i,j] = y[j]
 
-def update_plot(frame_number, zarray, plot):
-    plot[0].remove()
-    plot[0] = ax.plot_surface(X, Y, zarray[:,:,frame_number], cmap="magma")
-
-
-
-#%% TEMPERATURE PLOT
-
-if plot_temperature:
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-    plot = [ax.plot_surface(X, Y, T[:,:,0], color='0.75', rstride=1, cstride=1)]
-    #ax.set_zlim(0,T0_max)
-
-
-    frames = range(nb_steps+1)
-    if (nb_steps+1 > max_frames):
-        frames = [int(i*nb_steps/max_frames) for i in range(max_frames+1)]
-
-    animate = animation.FuncAnimation(fig, update_plot, frames, fargs=(T, plot))
-    plt.show()
-
-    #writer = animation.PillowWriter(fps=15)  
-    #animate.save("test.gif", writer=writer)
-
-
-
-#%% PRESSURE PLOT
-
-if plot_pressure:
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-
-
-    plot = [ax.plot_surface(X, Y, P[:,:,0], color='0.75', rstride=1, cstride=1)]
-    #ax.set_zlim(0,T0_max)
-
-
-    frames = range(nb_steps+1)
-    if (nb_steps+1 > max_frames):
-        frames = [int(i*nb_steps/max_frames) for i in range(max_frames+1)]
-
-    animate = animation.FuncAnimation(fig, update_plot, frames, fargs=(P, plot))
-    plt.show()
-
 
 
 #%% VELOCITY PLOT
@@ -145,3 +99,52 @@ if plot_velocity:
 
     animate = animation.FuncAnimation(fig, update_velocity_plot, frames)
     plt.show()
+
+
+
+
+def update_plot(frame_number, zarray, plot):
+    plot[0].remove()
+    plot[0] = ax.plot_surface(X, Y, zarray[:,:,frame_number], cmap="magma")
+
+
+
+#%% PRESSURE PLOT
+
+if plot_pressure:
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+
+    plot = [ax.plot_surface(X, Y, P[:,:,0], color='0.75', rstride=1, cstride=1)]
+    #ax.set_zlim(0,T0_max)
+
+
+    frames = range(nb_steps+1)
+    if (nb_steps+1 > max_frames):
+        frames = [int(i*nb_steps/max_frames) for i in range(max_frames+1)]
+
+    animate = animation.FuncAnimation(fig, update_plot, frames, fargs=(P, plot))
+    plt.show()
+
+
+
+#%% TEMPERATURE PLOT
+
+if plot_temperature:
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+
+    plot = [ax.plot_surface(X, Y, T[:,:,0], color='0.75', rstride=1, cstride=1)]
+    ax.set_zlim(0,5)
+
+
+    frames = range(nb_steps+1)
+    if (nb_steps+1 > max_frames):
+        frames = [int(i*nb_steps/max_frames) for i in range(max_frames+1)]
+
+    animate = animation.FuncAnimation(fig, update_plot, frames, fargs=(T, plot))
+    plt.show()
+
+    #writer = animation.PillowWriter(fps=15)  
+    #animate.save("test.gif", writer=writer)
