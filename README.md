@@ -1,4 +1,4 @@
-# HEAT EQUATION SOLVER FOR UNSTEADY INCOMPRESSIBLE FLOWS
+# UNSTEADY INCOMPRESSIBLE 2D NAVIER-STOKES SOLVER
 
 This project is a solver for the Navier-Stokes model in the case of 2D incompressible flows. Since the thermal and dynamic aspects of the flow are separable (see incompressible Navier-Stokes equations below), the code first computes the motion, and then solves the heat equation using the known motion.
 
