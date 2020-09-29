@@ -22,7 +22,7 @@ ny = 20
 tEnd = 10.
 nb_steps = 10000
 
-theta_th = 0.5
+theta_th = 1.
 accuracy_th = 0.0001
 
 
