@@ -14,7 +14,9 @@ This project is a solver for the Navier-Stokes model in the case of 2D incompres
 	<img src=eq_energy.png />
 </p>
 
-Regarding the computation of the fluid motion, velocity and pressure variables are integrated with very different techniques. The temporal integration of the velocity is performed explicitly by differenciating all the differential operators of the momentum equation with an explicit Euler scheme. On the other hand, with this model one can only derive a Poisson equation for the pressure, so the pressure part of the problem is solved with a LU decomposition of the matricial system associated thanks to the Doolittle Algorithm.
+The computation of the fluid motion is performed by explicitely integrating the velocity first, and then the pressure field is updated by solving a linear system AX = B with a LU decomposition LUX = B thanks to the Doolittle Algorithm.
+
+Then, the computed motion is used in a $\theta$-schema for the temporal integration, and the Gauss-Seidel algorithm to solve the resulting linear system.
 
 This project is coded as a C++ library interfaced with Python scripts, to benefit from the performance of the C++, the flexibility of Python and the graphical rendering of the Matplotlib library. The interface is realized with the PyBind11 library.
 
