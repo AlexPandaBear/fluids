@@ -81,22 +81,22 @@ install (
 #   COMMAND SimManagerTest )
 
 
-#find_program ( DOXYGEN_EXECUTABLE
-#  NAMES doxygen
-#  DOC /usr/ 
-#  HINTS $ENV{DOXYGEN_ROOT}
-#  PATH_SUFFIXES bin
-#)
-#
-#FIND_PROGRAM (DOXYGEN_DOT_EXECUTABLE
-#  NAMES dot
-#  DOC /usr/bin
-#  PATHS $ENV{DOT_HOME}
-#)
-#
-#add_custom_target ( reference_doc
-#    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/Doxyfile
-#)
+find_program ( DOXYGEN_EXECUTABLE
+  NAMES doxygen
+  DOC /usr/ 
+  HINTS $ENV{DOXYGEN_ROOT}
+  PATH_SUFFIXES bin
+)
+
+FIND_PROGRAM (DOXYGEN_DOT_EXECUTABLE
+  NAMES dot
+  DOC /usr/bin
+  PATHS $ENV{DOT_HOME}
+)
+
+add_custom_target ( reference_doc
+    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/Doxyfile
+)
 
 
 # Détection des prérequis
