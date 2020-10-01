@@ -26,6 +26,9 @@ To compile the library :
 - A C++ compiler  
 - The PyBind11 library  
 
+To generate the reference documentation :
+- Doxygen  
+
 To use it with Python :
 - Python 3+  
 - The Numpy and Matplotlib libraries  
@@ -43,6 +46,7 @@ Execute the following commands to compile the C++ library.
 user@linux:~/path/to/code$ cd build  
 user@linux:~/path/to/code/build$ cmake ../src -DCMAKE_INSTALL_PREFIX=$PWD/install    
 user@linux:~/path/to/code/build$ make install    
+user@linux:~/path/to/code/build$ make reference_doc
 ```
 
 ## How to use
@@ -53,6 +57,6 @@ user@linux:~/path/to/code/python$ export PYTHONPATH=$PWD/../build/install/lib/py
 ```
 
 For each simulation, follow these steps :
-- edit the parameters.py file
+- edit the parameters.py file to define your simulation
 - execute the simulation.py file
 - execute the plot.py file
