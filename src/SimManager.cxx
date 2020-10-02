@@ -25,6 +25,16 @@ void SimManager::defineFluidProperties(double lambda, double rho, double cp, dou
 	m_mu = mu;
 }
 
+void SimManager::defineBody(std::vector<std::vector<bool>> body)
+{
+	if (body.size() != m_nx || body[0].size() != m_ny)
+	{
+		throw std::invalid_argument("Body grid incompatible with meshing");
+	}
+
+	m_body = body;
+}
+
 void SimManager::defineInitialState(std::vector<std::vector<double>> U0, std::vector<std::vector<double>> V0, std::vector<std::vector<double>> T0)
 {
 	m_data.reset_size(m_nb_steps, m_nx, m_ny);
@@ -68,17 +78,47 @@ void SimManager::defineThermalBoundaryConditions(std::string type, double value)
 	}
 }
 
+void SimManager::defineFlowIntegrationParameters(double theta, double accuracy_u, double accuracy_v, double accuracy_p, bool clean_pressure)
+{
+	if (theta < 0. || theta > 1.)
+	{
+		throw std::invalid_argument("Theta parameter must be in [0,1]");
+	}
+	
+	if (accuracy_u <= 0. || accuracy_v <= 0. || accuracy_p <= 0.)
+	{
+		throw std::invalid_argument("Accuracy parameters must be greater than 0");
+	}
+	
+	m_theta_inc = theta;
+	m_accuracy_u = accuracy_u;
+	m_accuracy_v = accuracy_v;
+	m_accuracy_p = accuracy_p;
+	m_clean_pressure = clean_pressure;
+}
+
 void SimManager::defineThermalIntegrationParameters(double theta, double accuracy)
 {
+	if (theta < 0. || theta > 1.)
+	{
+		throw std::invalid_argument("Theta parameter must be in [0,1]");
+	}
+	
+	if (accuracy <= 0.)
+	{
+		throw std::invalid_argument("Accuracy parameters must be greater than 0");
+	}
+	
 	m_theta_th = theta;
 	m_accuracy_th = accuracy;
 }
 
 void SimManager::launchSimulation()
 {
-	IncompressibleKernel flow_kernel(m_data, m_tMax, m_nb_steps, m_Lx, m_Ly, m_nx, m_ny, m_rho, m_mu);
+	IncompressibleKernel flow_kernel(m_data, m_tMax, m_nb_steps, m_theta_inc, m_Lx, m_Ly, m_nx, m_ny, m_rho, m_mu, m_accuracy_u, m_accuracy_v, m_accuracy_p, m_clean_pressure);
 	flow_kernel.defineBoundaryConditions(m_U_BC, m_V_BC, m_P_BC);
-	flow_kernel.simulate();
+	flow_kernel.defineBody(m_body);
+	flow_kernel.simulate_theta();
 
 	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_theta_th, m_accuracy_th, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cp, m_T_BC);
 	th_kernel.simulate();

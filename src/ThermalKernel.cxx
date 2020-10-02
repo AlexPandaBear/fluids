@@ -216,5 +216,5 @@ void ThermalKernel::simulate()
 		}
 	}
 
-	std::cout << std::endl;
+	std::cout << "  --->  OK" << std::endl;
 }

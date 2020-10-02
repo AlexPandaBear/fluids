@@ -30,6 +30,8 @@ PYBIND11_MODULE(_vf, m)
             py::arg("rho"),
             py::arg("cv"),
             py::arg("mu"))
+        .def("defineBody", &SimManager::defineBody,
+            py::arg("body"))
         .def("defineInitialState", &SimManager::defineInitialState,
         	py::arg("U0"),
         	py::arg("V0"),
@@ -48,6 +50,12 @@ PYBIND11_MODULE(_vf, m)
         .def("defineThermalIntegrationParameters", &SimManager::defineThermalIntegrationParameters,
             py::arg("theta"),
             py::arg("accuracy"))
+        .def("defineFlowIntegrationParameters", &SimManager::defineFlowIntegrationParameters,
+            py::arg("theta"),
+            py::arg("accuracy_u"),
+            py::arg("accuracy_v"),
+            py::arg("accuracy_p"),
+            py::arg("clean_pressure"))
         .def("launchSimulation", &SimManager::launchSimulation)
         .def("getTemperatureAt", &SimManager::getTemperatureAt,
         	py::arg("t"),

@@ -57,12 +57,11 @@ if plot_velocity:
     arr_x = np.zeros((nx,ny,nb_steps+1))
     arr_y = np.zeros((nx,ny,nb_steps+1))
 
-    h = min(Lx/(nx-1), Ly/(ny-1))
-    u0_max = np.amax(U0)+1
-    v0_max = np.amax(V0)+1
+    h = min(Lx/(max_arrows_x-1), Ly/(max_arrows_y-1))
+    u0_max = np.sqrt(np.amax(U0**2 + V0**2))
 
     coef_u = h/u0_max
-    coef_v = h/v0_max
+    coef_v = h/u0_max
 
     for i in range(nx):
         for j in range(ny):

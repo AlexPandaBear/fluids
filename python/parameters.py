@@ -16,11 +16,17 @@ file_name = "../data/test"
 Lx = 20
 Ly = 5
 nx = 50
-ny = 20
+ny = 30
 
 #%% INTEGRATION
 tEnd = 10.
-nb_steps = 10000
+nb_steps = 5000
+
+theta_flow = 1.;
+accuracy_u = 0.0001;
+accuracy_v = 0.0001;
+accuracy_p = 0.0001;
+clean_pressure = False;
 
 theta_th = 1.
 accuracy_th = 0.0001
@@ -30,7 +36,16 @@ accuracy_th = 0.0001
 lamb = 0
 rho = 1000
 cp = 4000
-mu = 10
+mu = 50
+
+
+#%% BODY
+R = 0.1*ny
+body = [[False for j in range(ny)] for i in range(nx)]
+for i in range(nx):
+	for j in range(ny):
+		if (i-0.5*nx)**2 + (j-0.5*ny)**2 < R**2:
+			body[i][j] = True
 
 
 #%% BOUNDARY CONDITIONS

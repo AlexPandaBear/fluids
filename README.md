@@ -1,4 +1,4 @@
-# UNSTEADY INCOMPRESSIBLE 2D NAVIER-STOKES SOLVER
+# 2D INC. NAVIER-STOKES SOLVER
 
 This project is a solver for the Navier-Stokes model in the case of 2D incompressible flows. Since the thermal and dynamic aspects of the flow are separable (see incompressible Navier-Stokes equations below), the code first computes the motion, and then solves the heat equation using the known motion.
 
@@ -14,9 +14,9 @@ This project is a solver for the Navier-Stokes model in the case of 2D incompres
 	<img src=eq_energy.png />
 </p>
 
-The computation of the fluid motion is performed by explicitely integrating the velocity first, and then updating the pressure field by solving a linear system AX = B. The matricial system is solved with a LU decomposition LUX = B, thanks to the Doolittle Algorithm.
+The computation of the fluid motion is performed by iteratively solving a linear system AX = B at each time step with the Gauss-Seidel algorithm. The Navier-Stokes model can be reduced to this linear system by discretizing all the field operators and the temporal derivatives : the field operators are approximated by centered 2nd order finite differences, and the temporal integration is performed by a θ-scheme.
 
-Then, the computed motion is used in a θ-scheme along with the Gauss-Seidel algorithm to solve the resulting linear system for the temporal integration of the energy equation.
+Then, the computed motion is used in another θ-scheme associated with another Gauss-Seidel algorithm to solve the resulting linear system for the temporal integration of the energy equation.
 
 This project is coded as a C++ library interfaced with Python scripts, to benefit from the performance of the C++, the flexibility of Python and the graphical rendering of the Matplotlib library. The interface is realized with the PyBind11 library.
 
