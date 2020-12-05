@@ -66,19 +66,15 @@ if ( "${isSystemDir}" STREQUAL "-1" )
 endif ( "${isSystemDir}" STREQUAL "-1" )
 
 
-add_library ( vf SHARED SimManager.cxx IncompressibleKernel.cxx PoissonSolver.cxx ThermalKernel.cxx DataKeeper.cxx )
+add_library ( vf SHARED SimManager.cxx IncompressibleKernel.cxx PoissonSolver.cxx ThermalKernel.cxx DataKeeper.cxx DataProcessor.cxx )
 install (
   TARGETS vf
   LIBRARY DESTINATION lib
   )
 
 
-# test : nom=SimManager_Test commande=./SimManagerTest
-# add_executable ( SimManagerTest SimManagerTest.cxx )
-# target_link_libraries ( SimManagerTest vortex )
-# add_test (
-#   NAME SimManager_Test
-#   COMMAND SimManagerTest )
+add_executable ( DistributionFunction_Test test_DistributionFunction.cxx DistributionFunction.cxx )
+add_executable ( Field_Test test_Field.cxx Field.cxx )
 
 
 find_program ( DOXYGEN_EXECUTABLE

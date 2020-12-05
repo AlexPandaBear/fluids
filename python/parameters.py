@@ -14,13 +14,13 @@ file_name = "../data/test"
 
 #%% MESHING
 Lx = 20
-Ly = 5
+Ly = 10
 nx = 50
-ny = 30
+ny = 50
 
 #%% INTEGRATION
-tEnd = 10.
-nb_steps = 5000
+tEnd = 8.
+nb_steps = 8000
 
 theta_flow = 1.;
 accuracy_u = 0.0001;
@@ -40,7 +40,7 @@ mu = 50
 
 
 #%% BODY
-R = 0.1*ny
+R = 0.05*ny
 body = [[False for j in range(ny)] for i in range(nx)]
 for i in range(nx):
 	for j in range(ny):

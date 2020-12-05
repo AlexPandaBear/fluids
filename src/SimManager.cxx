@@ -1,6 +1,7 @@
 #include "SimManager.hxx"
 
-SimManager::SimManager() {}
+SimManager::SimManager() : m_processor(m_data) {}
+
 SimManager::~SimManager() {}
 
 void SimManager::defineTimeParameters(double tMax, size_t nb_steps)
@@ -122,6 +123,8 @@ void SimManager::launchSimulation()
 
 	ThermalKernel th_kernel(m_data, m_tMax, m_nb_steps, m_theta_th, m_accuracy_th, m_Lx, m_Ly, m_nx, m_ny, m_lambda, m_rho, m_cp, m_T_BC);
 	th_kernel.simulate();
+
+	initializeDataProcessor();
 }
 
 double SimManager::getTemperatureAt(size_t t, size_t i, size_t j) const
@@ -172,4 +175,82 @@ void SimManager::saveData(std::string file_name) const
 void SimManager::loadData(std::string file_name)
 {
 	m_data.loadData(file_name);
+	initializeDataProcessor();
+}
+
+void SimManager::initializeDataProcessor()
+{
+	m_processor.define_parameters(m_data, m_nx, m_ny, m_nb_steps, m_Lx/(m_nx-1), m_Ly/(m_ny-1), m_tMax/m_nb_steps);
+}
+
+std::vector<std::vector<double>> SimManager::getTemperatureFieldAt(size_t t) const
+{
+	std::cout << "yolo" << std::endl;
+	std::vector<std::vector<double>> T(m_nx, std::vector<double>(m_ny, 0.));
+
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		for (size_t j = 0; i < m_ny; j++)
+		{
+			T[i][j] = m_data.getTemperatureAt(t, i, j);
+		}
+	}
+
+
+	return T;
+}
+
+std::vector<std::vector<double>> SimManager::getPressureFieldAt(size_t t) const
+{
+	std::vector<std::vector<double>> P(m_nx, std::vector<double>(m_ny, 0.));
+
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		for (size_t j = 0; i < m_ny; j++)
+		{
+			P[i][j] = m_data.getPressureAt(t, i, j);
+		}
+	}
+
+	return P;
+}
+
+std::vector<std::vector<double>> SimManager::getXVelocityFieldAt(size_t t) const
+{
+	std::vector<std::vector<double>> U(m_nx, std::vector<double>(m_ny, 0.));
+
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		for (size_t j = 0; i < m_ny; j++)
+		{
+			U[i][j] = m_data.getXVelocityAt(t, i, j);
+		}
+	}
+
+	return U;
+}
+
+std::vector<std::vector<double>> SimManager::getYVelocityFieldAt(size_t t) const
+{
+	std::vector<std::vector<double>> V(m_nx, std::vector<double>(m_ny, 0.));
+
+	for (size_t i = 0; i < m_nx; i++)
+	{
+		for (size_t j = 0; i < m_ny; j++)
+		{
+			V[i][j] = m_data.getYVelocityAt(t, i, j);
+		}
+	}
+
+	return V;
+}
+
+std::vector<std::vector<double>> SimManager::getVelocityNormFieldAt(size_t t) const
+{
+	return m_processor.norm_V_field(t);
+}
+
+std::vector<std::vector<double>> SimManager::getVelocityDivergenceFieldAt(size_t t) const
+{
+	return m_processor.div_V_field(t);
 }

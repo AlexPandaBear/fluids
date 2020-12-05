@@ -7,6 +7,7 @@
 #include "IncompressibleKernel.hxx"
 #include "ThermalKernel.hxx"
 #include "DataKeeper.hxx"
+#include "DataProcessor.hxx"
 
 class SimManager
 {
@@ -39,6 +40,9 @@ private:
 	double m_press_err_max = 10.;
 
 	DataKeeper m_data;
+	DataProcessor m_processor;
+
+	void initializeDataProcessor();
 
 public:
 	SimManager();
@@ -49,9 +53,11 @@ public:
 	void defineFluidProperties(double lambda, double rho, double cp, double mu);
 	void defineBody(std::vector<std::vector<bool>> body);
 	void defineInitialState(std::vector<std::vector<double>> U0, std::vector<std::vector<double>> V0, std::vector<std::vector<double>> T0);
+	
 	void defineUniformDynamicBoundaryConditions(double U_bc, double V_bc, double P_bc);
 	void defineDynamicBoundaryConditions(std::vector<double> v_U_bc, std::vector<double> v_V_bc, std::vector<double> v_P_bc);
 	void defineThermalBoundaryConditions(std::string type, double value);
+	
 	void defineFlowIntegrationParameters(double theta, double accuracy_u, double accuracy_v, double accuracy_p, bool clean_pressure);
 	void defineThermalIntegrationParameters(double theta, double accuracy);
 
@@ -69,4 +75,12 @@ public:
 
 	void saveData(std::string file_name) const;
 	void loadData(std::string file_name);
+
+	std::vector<std::vector<double>> getTemperatureFieldAt(size_t t) const;
+	std::vector<std::vector<double>> getPressureFieldAt(size_t t) const;
+	std::vector<std::vector<double>> getXVelocityFieldAt(size_t t) const;
+	std::vector<std::vector<double>> getYVelocityFieldAt(size_t t) const;
+	
+	std::vector<std::vector<double>> getVelocityNormFieldAt(size_t t) const;
+	std::vector<std::vector<double>> getVelocityDivergenceFieldAt(size_t t) const;
 };

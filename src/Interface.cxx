@@ -76,5 +76,17 @@ PYBIND11_MODULE(_vf, m)
         .def("saveData", &SimManager::saveData,
         	py::arg("file_name"))
         .def("loadData", &SimManager::loadData,
-        	py::arg("file_name"));
+        	py::arg("file_name"))
+        .def("getTemperatureFieldAt", &SimManager::getTemperatureFieldAt,
+            py::arg("t"))
+        .def("getPressureFieldAt", &SimManager::getPressureFieldAt,
+            py::arg("t"))
+        .def("getXVelocityFieldAt", &SimManager::getXVelocityFieldAt,
+            py::arg("t"))        
+        .def("getYVelocityFieldAt", &SimManager::getYVelocityFieldAt,
+            py::arg("t"))
+        .def("getVelocityNormFieldAt", &SimManager::getVelocityNormFieldAt,
+            py::arg("t"))
+        .def("getVelocityDivergenceFieldAt", &SimManager::getVelocityDivergenceFieldAt,
+            py::arg("t"));
 }
