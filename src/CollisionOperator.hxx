@@ -1,6 +1,6 @@
 #pragma once
 
-#include <functional>
+#include <vector>
 #include "DistributionFunction.hxx"
 
 /*! @class CollisionOperator
@@ -12,23 +12,23 @@
  */
 class CollisionOperator
 {
-protected:
-	DistributionFunction const& m_f;
-
 public:
 	CollisionOperator() = 0;
 	virtual ~CollisionOperator();
 
-	/*! @brief A setter for the distribution function
-	 *  
-	 *  This method sets the member DistributionFunction object which will be used for computation.
-	 *	This object is stored by reference to avoid useless copies.
+	/*! @brief The operator computing the collision operation
+	 *	
+	 *	This operator defines the way the inherited classes will have to behave.
 	 *
-	 *  @param f The DistributionFunction object to link to this instance
+	 *	@param f The DistributionFunction to use
+	 *
+	 *	@param i The index on the x-axis of the point where the collision operation will be performed
+	 *
+	 *	@param j The index on the y-axis of the point where the collision operation will be performed
+	 *
+	 *	@returns A std::vector representing the new values at the given point of the distribution function after the collision step
 	 */
-	void set_f(DistributionFunction const& f);
-	
-	virtual double operator()(size_t i, size_t j, size_t k) const = 0;
+	virtual std::vector<double> operator()(DistributionFunction const& f, size_t i, size_t j) const = 0;
 };
 
 
@@ -43,15 +43,41 @@ class BGK : public CollisionOperator
 {
 protected:
 	double m_nu;
-	double m_r;
-
-	field..
-
-	std::function<double(size_t, size_t, size_t, field, field, field, field ..)> m_f_eq;
+	double m_gamma;
+	double m_dt;
 
 public:
-	BGK(double nu, double r, std::function<> f_eq);
+	/*!	@brief The constructor of the class
+	 *	
+	 *	This constructor initializes the object and defines the fluid and simulation parameter that will be used by operator().
+	 *
+	 *	@param nu The kinematic viscosity of the fluid
+	 *
+	 *	@param gamma The adiabatic coefficient of the fluid
+	 *
+	 *	@param dt The time step of the simulation
+	 */
+	BGK(double nu, double gamma, double dt);
+
+	/*! @brief The destructor of the class
+	 *
+	 */
 	~BGK();
-	
-	virtual double operator()(size_t i, size_t j, size_t k) const;	
+
+	/*! @brief The operator computing the collision operation
+	 *	
+	 *	This operator computes the collision step using the BGK approximation of Boltzmann's theoretical collision operator.
+	 *	The computation uses a second order approximation when computing the equilibrium distribution function and
+	 *	is therefore a good approximation of the Navier-Stokes model, as long as the Mach number stays low.
+	 *	This operator uses the parameters defined at the construction of the instance.
+	 *
+	 *	@param f The DistributionFunction to use
+	 *
+	 *	@param i The index on the x-axis of the point where the collision operation will be performed
+	 *
+	 *	@param j The index on the y-axis of the point where the collision operation will be performed
+	 *
+	 *	@returns A std::vector representing the new values at the given point of the distribution function after the collision step
+	 */
+	virtual std::vector<double> operator()(DistributionFunction const& f, size_t i, size_t j) const;	
 };
