@@ -1,58 +1,7 @@
-# Compilation du projet sous CMake
-#
-# 1. Créer un répertoire de construction (=builddir) hors du répertoire de sources (=srcdir):
-#    mkdir build
-#    cd build
-#
-# 2. Construire le projet (on référence le répertoire des sources en absolu ou en relatif):
-#    cmake <srcdir>
-#
-#   Si on envisage d'installer le projet définitivement (parce que terminé) après la construction,
-#   on précise tout de suite le futur répertoire d'installation (=installdir):
-#   cmake <srcdir> -DCMAKE_INSTALL_PREFIX=<installdir>
-#
-#   Pour activer le mode optimisé ou debug, ajouter la variable CMAKE_BUILD_TYPE avec les valeurs
-#   Release ou Debug ou RelWithDebInfo. Ex:
-#   cmake <srcdir> -DCMAKE_INSTALL_PREFIX=<installdir> -DCMAKE_INSTALL_PREFIX=Debug
-#
-#   Ici:
-#    cmake .. -DCMAKE_INSTALL_PREFIX=$PWD/install
-#
-# NOTA: cette opération n'est à faire qu'une seule fois (bootstrapping). Ensuite, chaque fichier est
-# suivi par CMake et reconstruit automatiquement en cas de modification par la commande 'make' de l'étape 3.
-#
-# 3. Compiler le projet:
-#    make
-#
-# 4. Installer le projet:
-#    make install
-#
-# 5. Tester le projet:
-#    make test
-#
-#   Ici:
-#    make test PYTHONPATH=$PWD/install/lib/python
-#
-# NOTA: en temps normal il devrait y avoir une batterie de tests à lancer avant l'installation, puis une autre
-#       à lancer après l'installation (obligatoire pour les test Python). Ici j'ai tout réuni par simplicité.
-#
-# That's all folks !
-#
-#
-# Dans ton cas:
-#  mkdir build
-#  cd build
-#  cmake .. -CMAKE_INSTALL_PREFIX=$PWD/install
-#  make install
-#  export PYTHONPATH=$PWD/install/lib/python
-#  python3 ../scriptVtx.py
-#
-
-
 cmake_minimum_required ( VERSION 3.0 )
 cmake_policy ( VERSION 3.0 )
 
-project ( vf CXX )
+project ( fluids CXX )
 enable_testing ()
 
 
@@ -70,11 +19,20 @@ add_library ( vf SHARED SimManager.cxx IncompressibleKernel.cxx PoissonSolver.cx
 install (
   TARGETS vf
   LIBRARY DESTINATION lib
-  )
+)
 
 
-add_executable ( DistributionFunction_Test test_DistributionFunction.cxx DistributionFunction.cxx )
-add_executable ( Field_Test test_Field.cxx Field.cxx )
+add_executable ( DistributionFunction_Test
+  test_DistributionFunction.cxx DistributionFunction.cxx
+)
+
+add_executable ( Field_Test
+  test_Field.cxx Field.cxx
+)
+
+add_executable ( LBMKernel_Test
+  test_LBMKernel.cxx LBMKernel.cxx CollisionOperator.cxx StreamingOperator.cxx BoundaryCondition.cxx DistributionFunction.cxx Field.cxx
+)
 
 
 find_program ( DOXYGEN_EXECUTABLE
@@ -91,7 +49,7 @@ FIND_PROGRAM (DOXYGEN_DOT_EXECUTABLE
 )
 
 add_custom_target ( reference_doc
-    ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/Doxyfile
+  ${DOXYGEN_EXECUTABLE} ${CMAKE_CURRENT_LIST_DIR}/Doxyfile
 )
 
 
@@ -108,7 +66,7 @@ target_link_libraries ( _vf PUBLIC vf )
 install (
   TARGETS _vf
   LIBRARY DESTINATION lib/python${PYTHON_VERSION}
-  )
+)
 
 
 # Local Variables:

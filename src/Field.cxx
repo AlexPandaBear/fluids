@@ -17,6 +17,21 @@ Field::Field(std::vector<size_t> dimensions) :
 
 Field::~Field() {}
 
+void Field::reshape(std::vector<size_t> dimensions)
+{
+	m_nb_dim = dimensions.size();
+	m_dimensions = dimensions;
+
+	size_t size = 1;
+
+	for (size_t d = 0; d < m_nb_dim; d++)
+	{
+		size *= m_dimensions[d];
+	}
+
+	ptr_data.reset(new double[size]);
+}
+
 double& Field::operator()(std::vector<size_t> index)
 {
 	size_t raw_index = index[0];

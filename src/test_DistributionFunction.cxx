@@ -8,6 +8,10 @@ int main(int argc, char const *argv[])
 	//Test constructor
 	DistributionFunction f(nx, ny, nv);
 
+	//Test velocity scheme
+	f.set_velocity_scheme({0, 1, 0, -1, 0}, {0, 0, 1, 0, -1}, {0.5, 0.125, 0.125, 0.125, 0.125});
+	f.display_velocity_scheme();
+
 	//Test operator()
 	for (size_t i = 0; i < nx; i++)
 	{

@@ -2,6 +2,8 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
+#include <string>
 
 /*! @class DistributionFunction
  *
@@ -18,7 +20,8 @@ class DistributionFunction
 private:
 	size_t m_nx, m_ny, m_nv;
 
-	std::vector<double> m_w, m_ex, m_ey, m_e2;
+	std::vector<int> m_ex, m_ey;
+	std::vector<double> m_e2, m_w;
 
 	std::unique_ptr<double[]> ptr_f;
 
@@ -34,8 +37,13 @@ public:
 	 *	@param nv The number of velocities if the velocity scheme
 	 *
 	 *  @warning This constructor only allocates the memory, but does not initialize the values of the field.
+	 *
+	 *	@warning This constructor only allocates the right amount of memory given the size of the velocity scheme,
+	 *	but the velocity scheme should be defined with the set_velocity_scheme method before use.
 	 */
-	DistributionFunction(size_t nx, size_t ny, size_t nv);
+	DistributionFunction(size_t nx = 0, size_t ny = 0, size_t nv = 0);
+
+	DistributionFunction(size_t nx, size_t ny, size_t nv, std::string vs);
 
 	//DistributionFunction(std::string file_name);
 	
@@ -43,6 +51,50 @@ public:
 	 *
 	 */
 	~DistributionFunction();
+
+	/*! @brief A method to define the velocity scheme
+	 *
+	 *	@param ex A std::vector describing the x component of each one of the velocities
+	 *
+	 *	@param ey A std::vector describing the y component of each one of the velocities
+	 *
+	 *	@param weights A std::vector defining the weight of each one of the velocities for gaussian quadrature
+	 */
+	void set_velocity_scheme(std::vector<int> ex, std::vector<int> ey, std::vector<double> weights);
+
+	/*! @brief A method displaying the velocity scheme
+	 */
+	void display_velocity_scheme() const;
+
+	/*! @brief A method to get the number of points in the x direction
+	 */
+	size_t get_size_x() const;
+	
+	/*! @brief A method to get the number of points in the y direction
+	 */
+	size_t get_size_y() const;
+
+	/*! @brief A method to get the number of discrete velocities
+	 */
+	size_t get_size_v() const;
+
+	/*! @brief A method to get the x component of one velocity of the scheme
+	 *
+	 *	@param k The id of the velocity in the scheme
+	 */
+	int get_ex(size_t k) const;
+	
+	/*! @brief A method to get the y component of one velocity of the scheme
+	 *
+	 *	@param k The id of the velocity in the scheme
+	 */
+	int get_ey(size_t k) const;
+
+	/*! @brief A method to get the gaussian quadrature weight of one velocity of the scheme
+	 *
+	 *	@param k The id of the velocity in the scheme
+	 */
+	double get_w(size_t k) const;
 
 	/*! @brief A method computing the density
 	 *

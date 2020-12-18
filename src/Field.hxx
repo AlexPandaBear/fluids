@@ -35,13 +35,27 @@ public:
 	 *
 	 *	@warning The constructor allocates by does not initialize the array.
 	 */
-	Field(std::vector<size_t> dimensions);
+	Field(std::vector<size_t> dimensions = {});
 
 	/*! @brief The field destructor
 	 *
 	 *	This destructor first deallocates the memory used by the instance, and then destroys the instance.
 	 */
 	~Field();
+
+	/*! @brief A method reshaping the instance
+	 *	
+	 *	This method takes the size of each dimension as a std::vector<size_t> and dynamically allocates the required memory.
+	 *	It reshapes the Field object to match the number of dimensions to the length of the std::vector.
+	 *
+	 *  @param dimensions A std::vector<size_t> indicating the size of each dimension.
+	 *	It is often useful to implicitely declare this std::vector with an initialization list.
+	 *
+	 *	@warning This method allocates by does not initialize the array.
+	 *
+	 *	@warning Any previously stored data will be lost by calling this method.
+	 */
+	void reshape(std::vector<size_t> dimensions);
 	
 	/*! @brief The field getter/setter
 	 *

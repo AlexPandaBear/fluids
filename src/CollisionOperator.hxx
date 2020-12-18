@@ -13,7 +13,7 @@
 class CollisionOperator
 {
 public:
-	CollisionOperator() = 0;
+	//CollisionOperator() = 0;
 	virtual ~CollisionOperator();
 
 	/*! @brief The operator computing the collision operation
@@ -22,13 +22,9 @@ public:
 	 *
 	 *	@param f The DistributionFunction to use
 	 *
-	 *	@param i The index on the x-axis of the point where the collision operation will be performed
-	 *
-	 *	@param j The index on the y-axis of the point where the collision operation will be performed
-	 *
-	 *	@returns A std::vector representing the new values at the given point of the distribution function after the collision step
+	 *	@param dt The length of the time step
 	 */
-	virtual std::vector<double> operator()(DistributionFunction const& f, size_t i, size_t j) const = 0;
+	virtual void operator()(DistributionFunction& f, double dt) const;
 };
 
 
@@ -44,7 +40,6 @@ class BGK : public CollisionOperator
 protected:
 	double m_nu;
 	double m_gamma;
-	double m_dt;
 
 public:
 	/*!	@brief The constructor of the class
@@ -54,10 +49,8 @@ public:
 	 *	@param nu The kinematic viscosity of the fluid
 	 *
 	 *	@param gamma The adiabatic coefficient of the fluid
-	 *
-	 *	@param dt The time step of the simulation
 	 */
-	BGK(double nu, double gamma, double dt);
+	BGK(double nu, double gamma);
 
 	/*! @brief The destructor of the class
 	 *
@@ -73,11 +66,7 @@ public:
 	 *
 	 *	@param f The DistributionFunction to use
 	 *
-	 *	@param i The index on the x-axis of the point where the collision operation will be performed
-	 *
-	 *	@param j The index on the y-axis of the point where the collision operation will be performed
-	 *
-	 *	@returns A std::vector representing the new values at the given point of the distribution function after the collision step
+	 *	@param dt The length of the time step
 	 */
-	virtual std::vector<double> operator()(DistributionFunction const& f, size_t i, size_t j) const;	
+	virtual void operator()(DistributionFunction& f, double dt) const;	
 };
