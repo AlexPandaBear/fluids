@@ -72,4 +72,40 @@ public:
 	 *  @bug Due to the absence of boundary checks, this operator should not be used on the degenerate case of a field of dimension zero. 
 	 */
 	double& operator()(std::vector<size_t> index);
+
+	/*! @brief A getter to the memory address of the first element of the field
+	 *
+	 *	@returns A pointer to the first element of the array
+	 *
+	 *	@warning This method is meant to be used only by the Python buffer protocol and should not be called by the user directly.
+	 */
+	double* get_ptr() const;
+
+	/*! @brief A getter to the memory size of each element of the field
+	 *
+	 *	@returns The size of an element of the array
+	 *
+	 *	@warning This method is meant to be used only by the Python buffer protocol and should not be called by the user directly.
+	 */
+	size_t get_element_size() const;
+
+	/*! @brief A getter to the number of dimensions of the field
+	 *
+	 *	@returns The number of dimensions of the field
+	 */
+	size_t get_nb_dimensions() const;
+
+	/*! @brief A getter to the size of each dimension of the field
+	 *
+	 *	@returns A std::vector containing the size of each dimension
+	 */
+	std::vector<size_t> get_dimensions_sizes() const;
+
+	/*! @brief A getter to the adjusted sizes of the elements of the field
+	 *
+	 *	@returns The apparent size of an element for each dimension
+	 *
+	 *	@warning This method is meant to be used only by the Python buffer protocol and should not be called by the user directly.
+	 */
+	std::vector<size_t> get_adjusted_element_sizes() const;
 };

@@ -22,5 +22,7 @@ public:
 	void build_space(double x_min, double x_max, size_t nx, double y_min, double y_max, size_t ny);
 	void build_time(double t_start, double t_end, size_t n);
 
+	void set_initial_state(Field& rho, Field& U, Field& E, double gamma);
+
 	void simulate(CollisionOperator& collision, StreamingOperator& streaming, Field& f_out);
 };

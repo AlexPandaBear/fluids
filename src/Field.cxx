@@ -44,3 +44,38 @@ double& Field::operator()(std::vector<size_t> index)
 
 	return ptr_data[raw_index];
 }
+
+double* Field::get_ptr() const
+{
+	return ptr_data.get();
+}
+
+size_t Field::get_element_size() const
+{
+	return sizeof(double);
+}
+
+size_t Field::get_nb_dimensions() const
+{
+	return m_nb_dim;
+}
+
+std::vector<size_t> Field::get_dimensions_sizes() const
+{
+	return m_dimensions;
+}
+
+std::vector<size_t> Field::get_adjusted_element_sizes() const
+{
+	std::vector<size_t> res(m_nb_dim, get_element_size());
+
+	for (size_t d = 0; d < m_nb_dim; d++)
+	{
+		for (size_t i = 0; i < d; i++)
+		{
+			res[i] *= m_dimensions[d];
+		}
+	}
+
+	return res;
+}

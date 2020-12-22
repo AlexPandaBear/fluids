@@ -146,6 +146,21 @@ double DistributionFunction::compute_rho_e(size_t i, size_t j) const
 	return 0.5*res;
 }
 
+void DistributionFunction::set_equilibrium(size_t i, size_t j, double rho, double ux, double uy, double e, double gamma)
+{
+	double c2(e * (gamma-1.));
+	double inv_c2(1. / c2);
+
+	double u2_c2((ux*ux + uy*uy) * inv_c2);
+	double eu_c2;
+
+	for (size_t k = 0; k < m_nv; k++)
+	{
+		eu_c2 = (get_ex(k) * ux + get_ey(k) * uy) * inv_c2;
+		(*this)(i, j, k) += get_w(k) * rho * (1. + eu_c2 + 0.5*(eu_c2*eu_c2 - u2_c2));
+	}
+}
+
 double& DistributionFunction::operator()(size_t i, size_t j, size_t k)
 {
 	return ptr_f[(i * m_ny + j) * m_nv + k];

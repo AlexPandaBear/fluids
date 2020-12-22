@@ -35,6 +35,20 @@ void LBMKernel::build_time(double t_start, double t_end, size_t n)
 	}
 }
 
+void LBMKernel::set_initial_state(Field& rho, Field& U, Field& E, double gamma)
+{
+	size_t nx(m_f.get_size_x());
+	size_t ny(m_f.get_size_y());
+
+	for (size_t i = 0; i < nx; i++)
+	{
+		for (size_t j = 0; j < ny; j++)
+		{
+			m_f.set_equilibrium(i, j, rho({i,j}), U({i,j,0}), U({i,j,1}), E({i,j}), gamma);
+		}
+	}
+}
+
 void LBMKernel::simulate(CollisionOperator& collision, StreamingOperator& streaming, Field& f_out)
 {
 	size_t nb_steps(m_time.size() - 1);

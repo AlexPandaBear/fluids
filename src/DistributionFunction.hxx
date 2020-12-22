@@ -148,6 +148,27 @@ public:
 	 */
 	double compute_rho_e(size_t i, size_t j) const;
 
+	/*! @brief A method to set the local values of the function
+	 *
+	 *	This method sets the different values of the distribution function at a given point in space.
+	 *	It uses the macroscopic flow variables and assumes local equilibrium to compute the values.
+	 *
+	 *	@param i The index along the x-axis of the point
+	 *
+	 *	@param j The index along the y-axis of the point
+	 *
+	 *	@param rho The density at this point
+	 *
+	 *	@param ux The velocity along the x-axis at this point
+	 *
+	 *	@param uy The velocity along the y-axis at this point
+	 *
+	 *	@param e The energy at this point
+	 *
+	 *	@warning Calling this method will overwrite theprevious values of the distribution function at (i,j).
+	 */
+	void set_equilibrium(size_t i, size_t j, double rho, double ux, double uy, double e, double gamma);
+
 	/*! @brief An operator serving as a getter/setter for the values of the distribution function
 	 *
 	 *	This operator is similar to the [] operator for arrays or vectors.

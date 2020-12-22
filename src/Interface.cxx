@@ -1,20 +1,19 @@
-/*
-<%
-setup_pybind11(cfg)
-cfg['compiler_args'] = ['-std=c++11', '-I/usr/local/lib/python3.7/dist-packages/pybind11-2.4.3-py3.7.egg/']
-cfg['dependencies'] = ['SimManager.hxx', 'IncompressibleKernel.hxx', 'ThermalKernel.hxx']
-cfg['sources'] = ['SimManager.cxx', 'IncompressibleKernel.cxx', 'ThermalKernel.cxx']
-%>
-*/
-
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include "SimManager.hxx"
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(_vf, m)
+
+void interface_lbm(py::module&);
+void interface_common(py::module&);
+
+
+PYBIND11_MODULE(_fluids, m)
 {
+    interface_lbm(m);
+    interface_common(m);
+
     py::class_<SimManager>(m, "SM")
     	.def(py::init<>())
         .def("defineTimeParameters", &SimManager::defineTimeParameters,
@@ -88,5 +87,5 @@ PYBIND11_MODULE(_vf, m)
         .def("getVelocityNormFieldAt", &SimManager::getVelocityNormFieldAt,
             py::arg("t"))
         .def("getVelocityDivergenceFieldAt", &SimManager::getVelocityDivergenceFieldAt,
-            py::arg("t"));
+            py::arg("t"));  
 }
