@@ -9,6 +9,8 @@
  *
  *	This class defines the interface of a collision operator.
  *	It is designed to be inherited from and can not be instanciated.
+ *
+ *	@todo Change df API
  */
 class CollisionOperator
 {
@@ -38,7 +40,7 @@ public:
 class BGK : public CollisionOperator
 {
 protected:
-	double m_nu;
+	double m_mu;
 	double m_gamma;
 
 public:
@@ -46,11 +48,11 @@ public:
 	 *	
 	 *	This constructor initializes the object and defines the fluid and simulation parameter that will be used by operator().
 	 *
-	 *	@param nu The kinematic viscosity of the fluid
+	 *	@param mu The viscosity of the fluid
 	 *
 	 *	@param gamma The adiabatic coefficient of the fluid
 	 */
-	BGK(double nu, double gamma);
+	BGK(double mu, double gamma);
 
 	/*! @brief The destructor of the class
 	 *

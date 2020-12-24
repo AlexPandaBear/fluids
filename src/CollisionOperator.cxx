@@ -4,8 +4,8 @@ CollisionOperator::~CollisionOperator() {}
 
 void CollisionOperator::operator()(DistributionFunction& f, double dt) const {}
 
-BGK::BGK(double nu, double gamma) :
-	m_nu(nu),
+BGK::BGK(double mu, double gamma) :
+	m_mu(mu),
 	m_gamma(gamma) {}
 
 BGK::~BGK() {}
@@ -31,7 +31,7 @@ void BGK::operator()(DistributionFunction& f, double dt) const
 			inv_c2 = 1. / c2;
 
 			u2_c2 = (ux*ux + uy*uy) * inv_c2;
-			inv_tau = c2 / (m_nu + 0.5 * dt * c2);
+			inv_tau = c2 / (m_mu/rho + 0.5 * dt * c2);
 
 
 			for (size_t k = 0; k < nv; k++)

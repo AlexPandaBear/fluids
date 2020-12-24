@@ -1,28 +1,45 @@
 #pragma once
 
 #include <vector>
+#include <string>
+#include <utility>
+#include "LBMConfig.hxx"
 #include "DistributionFunction.hxx"
 #include "Field.hxx"
 #include "BoundaryCondition.hxx"
 #include "CollisionOperator.hxx"
 #include "StreamingOperator.hxx"
 
+/*! @class LBMKernel
+ *
+ *	@todo Write the doc
+ */
 class LBMKernel
 {
 private:
+	LBMConfig m_config;
+
 	DistributionFunction m_f;
 
-	std::vector<double> m_x, m_y;
+	CollisionOperator m_collision;
+	StreamingOperator m_streaming;
+
+	std::vector<std::vector<double>> m_space;
 	std::vector<double> m_time;
 
+	void build_space();
+	void build_time();
+	void initialize_f();
+	void initialize_operators();
+
 public:
-	LBMKernel();
+	LBMKernel(LBMConfig& config);
+	LBMKernel(std::string config_file);
 	~LBMKernel();
 
-	void build_space(double x_min, double x_max, size_t nx, double y_min, double y_max, size_t ny);
-	void build_time(double t_start, double t_end, size_t n);
+	/*! @todo Finish API change
+	 */
+	void set_initial_state(Field& rho, Field& U, Field& E);
 
-	void set_initial_state(Field& rho, Field& U, Field& E, double gamma);
-
-	void simulate(CollisionOperator& collision, StreamingOperator& streaming, Field& f_out);
+	void simulate(Field& f_out);
 };

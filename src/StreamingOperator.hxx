@@ -9,6 +9,8 @@
  *
  *	This class defines the interface of a streaming operator.
  *	It is designed to be inherited from and can not be instanciated.
+ *
+ *	@todo Change df API
  */
 class StreamingOperator
 {

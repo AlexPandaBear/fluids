@@ -1,43 +1,59 @@
 #include "DistributionFunction.hxx"
 
-DistributionFunction::DistributionFunction(size_t nx, size_t ny, size_t nv) :
-	m_nx(nx),
-	m_ny(ny),
-	m_nv(nv),
-	m_w(nv, 0.),
-	m_ex(nv, 0.),
-	m_ey(nv, 0.),
-	ptr_f(new double[nx * ny * nv]) {}
-
-DistributionFunction::DistributionFunction(size_t nx, size_t ny, size_t nv, std::string vs) :
-	DistributionFunction(nx, ny, nv)
+DistributionFunction::DistributionFunction(std::vector<size_t>, std::string vs) :
+	m_nb_dim(sizes.size()),
+	m_sizes(sizes),
+	m_nv(0),
+	m_e(0, std::vector<int>(0, 0)),
+	m_e2(0, 0.),
+	m_w(0, 0.),
+	ptr_f(NULL)
 {
-	if (vs == "D2Q9")																					//	4-----3-----2
-	{																									//	| *   |   * |
-		set_velocity_scheme({0, 1, 1, 0, -1, -1, -1, 0, 1},												//	|   * | *   |
-							{0, 0, 1, 1, 1, 0, -1, -1, -1},												//	5-----0-----1
-							{4./9., 1./9., 1./36., 1./9., 1./36., 1./9., 1./36., 1./9., 1./36.});		//	|   * | *   |
-	}																									//	| *   |   * |
-																										//	6-----7-----8
-	else
+	switch (vs)
 	{
-		throw std::invalid_argument("Unknown velocity scheme");
+		case "D2Q9":
+			set_velocity_scheme({{0, 0},						//	4-----3-----2
+								 {1, 0},						//	| *   |   * |
+								 {1, 1},						//	|   * | *   |
+								 {0, 1},						//	5-----0-----1
+								 {-1, 1},						//	|   * | *   |
+								 {-1, 0},						//	| *   |   * |
+								 {-1, -1},						//	6-----7-----8
+								 {0, -1},
+								 {1, -1}},
+								{4./9., 1./9., 1./36., 1./9., 1./36., 1./9., 1./36., 1./9., 1./36.});
+		default:
+			throw std::invalid_argument("Unknown velocity scheme");
 	}
 }
 
 DistributionFunction::~DistributionFunction() {}
 
-void DistributionFunction::set_velocity_scheme(std::vector<int> ex, std::vector<int> ey, std::vector<double> weights)
+void DistributionFunction::set_velocity_scheme(std::vector<std::vector<int>> elem_vel, std::vector<double> weights)
 {
+	m_nv = weights.size();
+	m_e = elem_vel;
+	m_e2 = std::vector(m_nv, 0.)
+
 	for (size_t k = 0; k < m_nv; k++)
 	{
-		m_w[k] = weights[k];
-		m_ex[k] = ex[k];
-		m_ey[k] = ey[k];
-		m_e2[k] = ex[k]*ex[k] + ey[k]*ey[k];
+		for (size_t d = 0; d < m_nb_dim; d++)
+		{
+			m_e2[k] += pow(m_e[k][d], 2);
+		}
 	}
-}
 
+	m_w = weights;
+
+	size_t size_tot(m_nv);
+	for (size_t s : m_sizes)
+	{
+		size_tot *= s;
+	}
+
+	ptr_f.reset(new double[size_tot]);
+}
+/*
 void DistributionFunction::display_velocity_scheme() const
 {
 	std::cout << "Ex = [ ";
@@ -67,30 +83,15 @@ void DistributionFunction::display_velocity_scheme() const
 
 	std::cout << "]" << std::endl;
 }
-
-size_t DistributionFunction::get_size_x() const
+*/
+std::vector<size_t> DistributionFunction::get_sizes() const
 {
-	return m_nx;
+	return m_sizes;
 }
 
-size_t DistributionFunction::get_size_y() const
+std::vector<int> DistributionFunction::get_e(size_t k) const
 {
-	return m_ny;
-}
-
-size_t DistributionFunction::get_size_v() const
-{
-	return m_nv;
-}
-
-int DistributionFunction::get_ex(size_t k) const
-{
-	return m_ex[k];
-}
-
-int DistributionFunction::get_ey(size_t k) const
-{
-	return m_ey[k];
+	return m_e[k];
 }
 
 double DistributionFunction::get_w(size_t k) const
@@ -98,70 +99,138 @@ double DistributionFunction::get_w(size_t k) const
 	return m_w[k];
 }
 
-double DistributionFunction::compute_rho(size_t i, size_t j) const
+std::vector<double> DistributionFunction::get_f(std::vector<size_t> pt) const
 {
+	size_t index(pt[0]);
+
+	for (size_t d = 1; d < m_nb_dim; d++)
+	{
+		index *= m_sizes[i];
+		index += pt[i];
+	}
+
+	index *= m_nv;
+
+	std::vector<double> res(m_nv, 0.);
+
+	for (size_t k = 0; k < m_nv; k++)
+	{
+		res[k] = ptr_f[index + k];
+	}
+
+	return res;
+}
+
+double DistributionFunction::compute_rho(std::vector<size_t> pt) const
+{
+	std::vector<double> f(get_f(pt));
 	double rho(0.);
 
 	for (size_t k = 0; k < m_nv; k++)
 	{
-		rho += m_w[k] * ptr_f[(i * m_ny + j) * m_nv + k];
+		rho += m_w[k] * f[k];
 	}
 
 	return rho;
 }
 
-double DistributionFunction::compute_rho_ux(size_t i, size_t j) const
+double DistributionFunction::compute_rho_ui(std::vector<size_t> pt, size_t axis) const
 {
-	double ux(0.);
-
-	for (size_t k = 0; k < m_nv; k++)
-	{
-		ux += m_w[k] * m_ex[k] * ptr_f[(i * m_ny + j) * m_nv + k];
-	}
-
-	return ux;
-}
-
-double DistributionFunction::compute_rho_uy(size_t i, size_t j) const
-{
-	double uy(0.);
-
-	for (size_t k = 0; k < m_nv; k++)
-	{
-		uy += m_w[k] * m_ey[k] * ptr_f[(i * m_ny + j) * m_nv + k];
-	}
-
-	return uy;
-}
-
-double DistributionFunction::compute_rho_e(size_t i, size_t j) const
-{
+	std::vector<double> f(get_f(pt));
 	double res(0.);
 
 	for (size_t k = 0; k < m_nv; k++)
 	{
-		res += m_w[k] * m_e2[k] * ptr_f[(i * m_ny + j) * m_nv + k];
+		res += m_w[k] * m_e[k][axis] * f[k];
+	}
+
+	return res;
+}
+
+double DistributionFunction::compute_rho_e(std::vector<size_t> pt) const
+{
+	std::vector<double> f(get_f(pt));
+	double res(0.);
+
+	for (size_t k = 0; k < m_nv; k++)
+	{
+		res += m_w[k] * m_e2[k] * f[k];
 	}
 
 	return 0.5*res;
 }
 
-void DistributionFunction::set_equilibrium(size_t i, size_t j, double rho, double ux, double uy, double e, double gamma)
+std::vector<double> DistributionFunction::compute_macro_variables(std::vector<size_t> pt) const
+{
+	std::vector<double> f(get_f(pt));
+	std::vector<double> res(m_nb_dim + 2, 0.);
+
+	for (size_t k = 0; k < m_nv; k++)
+	{
+		res[0] += m_w[k] * f[k];
+	}
+
+	for (size_t ax = 0; ax < m_nb_dim; ax++)
+	{
+		for (size_t k = 0; k < m_nv; k++)
+		{
+			res[1 + ax] += m_w[k] * m_e[k][ax] * f[k];
+		}
+
+		res[1 + ax] /= res[0];
+	}
+
+	for (size_t k = 0; k < m_nv; k++)
+	{
+		res[m_nb_dim + 1] += m_w[k] * m_e2[k] * f[k];
+	}
+
+	res[m_nb_dim + 1] /= res[0];
+
+	return res;
+}
+
+void DistributionFunction::set_equilibrium(std::vector<size_t> pt, double rho, std::vector<double> u, double e, double gamma)
 {
 	double c2(e * (gamma-1.));
 	double inv_c2(1. / c2);
 
-	double u2_c2((ux*ux + uy*uy) * inv_c2);
+	double u2(0.);
+
+	for (size_t d = 0; d < m_nb_dim; d++)
+	{
+		u2 += pow(u[d], 2);
+	}
+
+	double u2_c2(u2 * inv_c2);
 	double eu_c2;
 
 	for (size_t k = 0; k < m_nv; k++)
 	{
-		eu_c2 = (get_ex(k) * ux + get_ey(k) * uy) * inv_c2;
-		(*this)(i, j, k) += get_w(k) * rho * (1. + eu_c2 + 0.5*(eu_c2*eu_c2 - u2_c2));
+		eu_c2 = 0.;
+
+		for (size_t d = 0; d < m_nb_dim; d++)
+		{
+			eu_c2 += m_e[k][d] * u[d];
+		}
+
+		eu_c2 *= inv_c2;
+
+		(*this)(pt, k) += get_w(k) * rho * (1. + eu_c2 + 0.5*(eu_c2*eu_c2 - u2_c2));
 	}
 }
 
-double& DistributionFunction::operator()(size_t i, size_t j, size_t k)
+double& DistributionFunction::operator()(std::vector<size_t> pt, size_t k)
 {
-	return ptr_f[(i * m_ny + j) * m_nv + k];
+	size_t index(pt[0]);
+
+	for (size_t d = 1; d < m_nb_dim; d++)
+	{
+		index *= m_sizes[i];
+		index += pt[i];
+	}
+
+	index *= m_nv;
+
+	return ptr_f[index + k];
 }

@@ -15,6 +15,9 @@
  *	The field can be of any spacial dimension too.
  *	This class allows to manage easily dynamically allocated, contiguous, arbitrarily big and high-dimensional arrays.
  *	The user is responsible for the definition and meaning of each dimension.
+ *	This class is consistent with de Python buffer protocol.
+ *
+ *	@todo Make it a class template
  */
 class Field
 {
